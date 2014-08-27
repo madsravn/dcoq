@@ -536,22 +536,41 @@ Lemma Le' :
   forall A B C: Prop,
     (A -> C) \/ (B -> C) -> (A \/ B -> C).
 Proof.
-  intros A B C.
+Admitted.
 
 
 Lemma Lf :
   forall A B C: Prop,
     (A \/ B -> C) -> (A -> C) /\ (B -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  intro H_A_OR_B_IMPLIES_C.
+  split.
+  intro H_A.
+  apply H_A_OR_B_IMPLIES_C.
+  left.
+  apply H_A.
+  intro H_B.
+  apply H_A_OR_B_IMPLIES_C.
+  right.
+  apply H_B.
+Qed.
+
 
 Lemma Lf' :
   forall A B C: Prop,
     (A -> C) /\ (B -> C) -> (A \/ B -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  intro H_A_OR_B_IMPLIES_C.
+  destruct H_A_OR_B_IMPLIES_C as [H_P1 H_P2].
+  intro H_A_OR_B.
+  destruct H_A_OR_B.
+  apply H_P1.
+  apply H.
+  apply H_P2.
+  apply H.
+Qed.
 
 Lemma Lg :
   forall A B C: Prop,

@@ -288,28 +288,48 @@ Proof.
   apply conjunction_is_associative_from_left_to_right.
 Qed.
 
-(* Du kom hertil *)
+
 
 Lemma conjunction_is_associative_4_from_left_to_right :
   forall P1 P2 P3 P4 : Prop,
     P1 /\ (P2 /\ (P3 /\ P4)) -> ((P1 /\ P2) /\ P3) /\ P4.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  intros [H_P1 [H_P2 [H_P3 H_P4]]].
+  split.
+  split.
+  split.
+  apply H_P1.
+  apply H_P2.
+  apply H_P3.
+  apply H_P4.
+Qed.
 
 Lemma conjunction_is_associative_4_from_right_to_left :
   forall P1 P2 P3 P4 : Prop,
     ((P1 /\ P2) /\ P3) /\ P4 -> P1 /\ (P2 /\ (P3 /\ P4)).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  intros [[[H_P1 H_P2] H_P3] H_P4].
+  split.
+  apply H_P1.
+  split.
+  apply H_P2.
+  split.
+  apply H_P3.
+  apply H_P4.
+Qed.
+
 
 Lemma conjunction_is_associative_4_either_way :
   forall P1 P2 P3 P4 : Prop,
     P1 /\ (P2 /\ (P3 /\ P4)) <-> ((P1 /\ P2) /\ P3) /\ P4.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  split.
+  apply (conjunction_is_associative_4_from_left_to_right P1 P2 P3 P4).
+  apply (conjunction_is_associative_4_from_right_to_left P1 P2 P3 P4).
+Qed.
 
 (* ********** *)
 
@@ -379,8 +399,19 @@ Lemma disjunction_is_commutative_either_way :
   forall P Q : Prop,
     P \/ Q <-> Q \/ P.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P Q.
+  split.
+  intros [H_P | H_Q].
+  right.
+  apply H_P.
+  left.
+  apply H_Q.
+  intros [H_Q | H_P].
+  right.
+  apply H_Q.
+  left.
+  apply H_P.
+Qed.
 
 Lemma disjunction_is_associative_from_left_to_right :
   forall P1 P2 P3 : Prop,
@@ -396,36 +427,57 @@ Lemma disjunction_is_associative_from_right_to_left :
   forall P1 P2 P3 : Prop,
     P1 \/ (P2 \/ P3) -> (P1 \/ P2) \/ P3.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 [ H_P1 | [ H_P2 | H_P3]].
+  left. left. apply H_P1.
+  left. right. apply H_P2.
+  right. apply H_P3.
+Qed.
 
 Lemma disjunction_is_associative_either_way :
   forall P1 P2 P3 : Prop,
     P1 \/ (P2 \/ P3) <-> (P1 \/ P2) \/ P3.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3.
+  split.
+  apply (disjunction_is_associative_from_right_to_left P1 P2 P3).
+  apply (disjunction_is_associative_from_left_to_right P1 P2 P3).
+Qed.
+
 
 Lemma disjunction_is_associative_4_from_left_to_right :
   forall P1 P2 P3 P4 : Prop,
     P1 \/ (P2 \/ (P3 \/ P4)) -> ((P1 \/ P2) \/ P3) \/ P4.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  intros [H_P1 | [ H_P2 | [H_P3 | H_P4]]].
+  left. left. left. apply H_P1.
+  left. left. right. apply H_P2.
+  left. right. apply H_P3.
+  right. apply H_P4.
+Qed.
 
 Lemma disjunction_is_associative_4_from_right_to_left :
   forall P1 P2 P3 P4 : Prop,
     ((P1 \/ P2) \/ P3) \/ P4 -> P1 \/ (P2 \/ (P3 \/ P4)).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  intros [[[H_P1 | H_P2] | H_P3] | H_P4].
+  left. apply H_P1.
+  right. left. apply H_P2.
+  right. right. left. apply H_P3.
+  right. right. right. apply H_P4.
+Qed.
 
 Lemma disjunction_is_associative_4_either_way :
   forall P1 P2 P3 P4 : Prop,
     P1 \/ (P2 \/ (P3 \/ P4)) <-> ((P1 \/ P2) \/ P3) \/ P4.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P1 P2 P3 P4.
+  split.
+  apply (disjunction_is_associative_4_from_left_to_right P1 P2 P3 P4).
+  apply (disjunction_is_associative_4_from_right_to_left P1 P2 P3 P4).
+Qed.
+
 
 (* ********** *)
 
@@ -446,8 +498,15 @@ Lemma transitivity_of_implication' :
   forall A B C : Prop,
     (B -> C) -> (A -> B) -> (A -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  intro H_B_IMPLIES_C.
+  intro H_A_IMPLIES_B.
+  intro H_A.
+  apply H_B_IMPLIES_C.
+  apply H_A_IMPLIES_B.
+  apply H_A.
+Qed.
+
 
 Lemma Le :
   forall A B C: Prop,
@@ -471,14 +530,14 @@ Proof.
   right.
   apply H_B.
 Qed.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+
 
 Lemma Le' :
   forall A B C: Prop,
     (A -> C) \/ (B -> C) -> (A \/ B -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+
 
 Lemma Lf :
   forall A B C: Prop,

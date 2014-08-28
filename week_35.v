@@ -531,7 +531,7 @@ Proof.
   apply H_B.
 Qed.
 
-
+(* CANT MAKE THIS ONE WORK *)
 Lemma Le' :
   forall A B C: Prop,
     (A -> C) \/ (B -> C) -> (A \/ B -> C).
@@ -577,28 +577,52 @@ Lemma Lg :
     (A /\ B -> C) -> (A -> C) \/ (B -> C).
 Proof.
 Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
 
+
+
+
+
+
+(* TODO: Better naming *)
 Lemma Lg' :
   forall A B C: Prop,
     (A -> C) \/ (B -> C) -> (A /\ B -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  intro H_A_OR_B_IMPLIES_C.
+  destruct H_A_OR_B_IMPLIES_C.
+  intro H_A_AND_B.
+  destruct H_A_AND_B.
+  apply H.
+  apply H0.
+  intro H_A_AND_B.
+  destruct H_A_AND_B.
+  apply H.
+  apply H1.
+Qed.
+
+
 
 Lemma Lh :
   forall A B C: Prop,
     (A /\ B -> C) -> (A -> C) /\ (B -> C).
 Proof.
 Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+
 
 Lemma Lh' :
   forall A B C: Prop,
     (A -> C) /\ (B -> C) -> (A /\ B -> C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  intro H_A_AND_B_IMPLIES_C.
+  destruct H_A_AND_B_IMPLIES_C.
+  intro H_A_AND_B.
+  destruct H_A_AND_B.
+  apply H.
+  apply H1.
+Qed.
+
 
 (* ********** *)
 
@@ -606,15 +630,66 @@ Lemma distributivity_of_disjunction_over_conjunction:
   forall A B C : Prop,
     A \/ (B /\ C) <-> (A \/ B) /\ (A \/ C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  split.
+  intro H_A_OR_B_AND_C.
+  destruct H_A_OR_B_AND_C.
+  split.
+  left.
+  apply H.
+  left.
+  apply H.
+  split.
+  destruct H.
+  right.
+  apply H.
+  destruct H.
+  right.
+  apply H0.
+  
+  intro H_A_OR_B_AND_A_OR_C.
+  destruct H_A_OR_B_AND_A_OR_C.
+  destruct H.
+  destruct H0.
+  left.
+  apply H.
+  left.
+  apply H.
+  Admitted.
+
 
 Lemma distributivity_of_conjunction_over_disjunction:
   forall A B C : Prop,
     A /\ (B \/ C) <-> (A /\ B) \/ (A /\ C).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros A B C.
+  split.
+  intro H_A_AND_B_OR_C.
+  destruct H_A_AND_B_OR_C.
+  destruct H0.
+  left.
+  split.
+  apply H.
+  apply H0.
+  right.
+  split.
+  apply H.
+  apply H0.
+  
+  intro H_A_AND_B_OR_A_AND_C.
+  destruct H_A_AND_B_OR_A_AND_C.
+  destruct H.
+  split.
+  apply H.
+  left.
+  apply H0.
+  destruct H.
+  split.
+  apply H.
+  right.
+  apply H0.
+ Qed.
+
 
 (* ********** *)
 
@@ -622,22 +697,41 @@ Lemma Curry :
   forall P Q R : Prop,
     (P /\ Q -> R) -> (P -> Q -> R).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P Q R.
+  intro H_P_AND_Q_IMPLIES_R.
+  intro H_P.
+  intro H_Q.
+  apply H_P_AND_Q_IMPLIES_R.
+  split.
+  apply H_P.
+  apply H_Q.
+Qed.
+
 
 Lemma unCurry :
   forall P Q R : Prop,
     (P -> Q -> R) -> (P /\ Q -> R).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P Q R.
+  intro H_P_Q_R.
+  intro H_P_AND_Q.
+  apply H_P_Q_R.
+  destruct H_P_AND_Q.
+  apply H.
+  destruct H_P_AND_Q.
+  apply H0.
+Qed.
+
 
 Lemma Curry_and_unCurry :
   forall P Q R : Prop,
     (P /\ Q -> R) <-> P -> Q -> R.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros P Q R.
+  split.
+  apply (Curry P Q R).
+  apply (unCurry P Q R).
+Qed.
 
 (* ********** *)
 
@@ -656,15 +750,19 @@ Lemma comm_a :
   forall a b c : nat,
     (a + b) + c = c + (b + a).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros a b c.
+  rewrite -> (plus_comm a b).
+  rewrite -> (plus_comm (b + a) c).
+  reflexivity.
+ Qed.
 
 Lemma comm_b :
   forall x y z : nat,
     (x + y) + z = z + (y + x).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros x y z.
+  apply (comm_a x y z).
+Qed.
 
 (* symmetry *)
 
@@ -672,8 +770,11 @@ Lemma comm_c :
   forall a b c : nat,
     c + (b + a) = (a + b) + c.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros a b c.
+  rewrite <- (plus_comm a b).
+  rewrite <- (plus_comm (a + b) c).
+  reflexivity.
+Qed.
 
 (* ********** *)
 
@@ -688,8 +789,14 @@ Lemma assoc_a :
   forall a b c d : nat,
     ((a + b) + c) + d = a + (b + (c + d)).
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros a b c d.
+
+  rewrite -> (plus_assoc a b (c + d)).
+  rewrite -> (plus_assoc (a + b) c d).
+  reflexivity.
+Qed.
+
+
 
 (* ********** *)
 
@@ -697,8 +804,20 @@ Lemma mixed_a :
 forall a b c d : nat,
     (c + (a + b)) + d = (b + (d + c)) + a.
 Proof.
-Admitted.
-(* Exercise: replace "Admitted." by a proof, if there is one. *)
+  intros a b c d.
+  rewrite -> (plus_assoc c a b).
+  rewrite -> (plus_comm (c + a + b) d).
+  rewrite -> (plus_assoc d (c + a) b).
+  rewrite -> (plus_assoc d c a).
+
+  rewrite -> (plus_assoc b d c).
+  rewrite -> (plus_comm (b + d + c) a).
+  rewrite -> (plus_assoc a (b + d) c).
+  rewrite -> (plus_assoc a b d).
+
+  Admitted.
+
+
 
 (* ********** *)
 

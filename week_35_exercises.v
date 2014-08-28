@@ -123,15 +123,52 @@ Theorem conjunction_is_associative_either_way :
   forall P1 P2 P3 : Prop,
     P1 /\ (P2 /\ P3) <-> (P1 /\ P2) /\ P3.
 Proof.
-Abort.
-(* You should replace "Abort." by a proof, if there is one. *)
+  split.
+    intros [H_P1 [H_P2 H_P3]].
+    split.
+      split.
+        apply H_P1.
+        apply H_P2.
+      apply H_P3.
+    intros [[H_P1 H_P2] H_P3].
+    split.
+      apply H_P1.
+    split.
+      apply H_P2.
+      apply H_P3.
+Qed.
+
 
 Theorem disjunction_is_associative_either_way :
   forall P1 P2 P3 : Prop,
     P1 \/ (P2 \/ P3) <-> (P1 \/ P2) \/ P3.
 Proof.
-Abort.
-(* You should replace "Abort." by a proof, if there is one. *)
+  split.
+    intros [H_P1 | [H_P2 | H_P3]].
+    left.
+    left.
+    apply H_P1.
+    
+    left.
+    right.
+    apply H_P2.
+    
+    right.
+    apply H_P3.
+    
+    intros [[H_P1 | H_P2] | H_P3].
+    left.
+    apply H_P1.
+
+    right.
+    left.
+    apply H_P2.
+    
+    right.
+    right.
+    apply H_P3.
+Qed.
+
 
 (* ********** *)
 
@@ -139,18 +176,75 @@ Abort.
    Prove that conjunction and disjunctions are commutative.
 *)
 
+Lemma conjunction_is_commutative : 
+  forall P1 P2 : Prop,
+    P1 /\ P2 -> P2 /\ P1.
+Proof.
+  intros P1 P2.
+  intros [H_P1 H_P2].
+  split.
+    apply H_P2.
+    apply H_P1.
+Qed.
+
+Lemma disjunctiontion_is_commutative : 
+  forall P1 P2 : Prop,
+    P1 \/ P2 -> P2 \/ P1.
+Proof.
+  intros P1 P2.
+  intros [H_P1 | H_P2].
+    right.
+    apply H_P1.
+
+    left.
+    apply H_P2.
+Qed.
+
 (* ********** *)
 
 (* Exercise 3:
    Prove the following lemma, Curry_and_unCurry.
 *)
 
+Lemma Curry :
+  forall P Q R : Prop,
+    (P /\ Q -> R) -> (P -> Q -> R).
+Proof.
+  intros P Q R.
+  intro H_P_AND_Q_IMPLIES_R.
+  intro H_P.
+  intro H_Q.
+  apply H_P_AND_Q_IMPLIES_R.
+  split.
+    apply H_P.
+    apply H_Q.
+Qed.
+
+
+Lemma unCurry :
+  forall P Q R : Prop,
+    (P -> Q -> R) -> (P /\ Q -> R).
+Proof.
+  intros P Q R.
+  intro H_P_Q_R.
+  intro H_P_AND_Q.
+  destruct H_P_AND_Q as [H_P H_Q].
+    apply H_P_Q_R.
+    apply H_P.
+    apply H_Q.
+Qed.
+
+
 Lemma Curry_and_unCurry :
   forall P Q R : Prop,
     (P /\ Q -> R) <-> P -> Q -> R.
 Proof.
-Abort.
-(* You should replace "Abort." by a proof, if there is one. *)
+  intros P Q R.
+  split.
+    apply (Curry P Q R).
+    apply (unCurry P Q R).
+Qed.
+
 
 (* ********** *)
 
@@ -204,10 +298,40 @@ Proof.
 
   Restart.
 
+
   intros a b c.
   rewrite -> (plus_comm a b).
   rewrite <- (plus_comm (b + a) c).
   reflexivity.
+
+  Restart.
+
+  (* New ones *)
+
+  intros a b c.
+  rewrite <- (plus_comm a b).
+  rewrite -> (plus_comm (a + b) c).
+  reflexivity.
+
+  Restart.
+
+  intros a b c.
+  rewrite -> (plus_comm (a + b) c).
+  rewrite <- (plus_comm b a).
+  reflexivity.
+
+  Restart.
+  intros a b c.
+  rewrite <- (plus_comm (b + a) c).
+  rewrite -> (plus_comm b a).
+  reflexivity.
+
+  Restart.
+  intros a b c.
+  rewrite -> (plus_comm a b).
+  rewrite <- (plus_comm c (b + a)).
+  reflexivity.
+
 Qed.
 
 (* Exercise 4:
@@ -215,6 +339,11 @@ Qed.
 
    For the over-achievers:
    How many distinct proofs are there for Lemma comm_a?
+
+   If we stick to only two rewrites per proof:
+   So we need one rewrite to change the position of the a and the b and one rewrite to swap the c to the other side of the parantheses. 
+  We notice that "-> a b" is the same as "<- b a" so the "same" swap can be done in four different ways: Either by two "->" rewrites, two "<-" rewrites, one "<-" and one "->" rewrites or one "->" and one "<-" rewrite. Seeing that we have four different swaps to make, I would say we have 16 distinct proofs for Lemma comm_a.
+
 *)
 
 (* ********** *)
@@ -232,6 +361,9 @@ Proof.
 Qed.
 
 (* ********** *)
+
+(* DU NÅEDE HERTIL *)
+(* HUSK AT TJEKKE EXERCISE 4 FOR ANTAL KOMBINATIONER *)
 
 (* symmetry *)
 

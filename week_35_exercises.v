@@ -2,6 +2,8 @@
 (* dIFP 2014-2015, Q1 *)
 (* Olivier Danvy <danvy@cs.au.dk> *)
 
+(* BY Mads Ravn - 20071580 *)
+
 (* ********** *)
 
 (*
@@ -332,6 +334,12 @@ Proof.
   rewrite <- (plus_comm c (b + a)).
   reflexivity.
 
+  Restart.
+  intros a b c.
+  rewrite <- (plus_comm c (a + b)).
+  rewrite <- (plus_comm b a).
+  reflexivity.
+
 Qed.
 
 (* Exercise 4:
@@ -341,8 +349,13 @@ Qed.
    How many distinct proofs are there for Lemma comm_a?
 
    If we stick to only two rewrites per proof:
-   So we need one rewrite to change the position of the a and the b and one rewrite to swap the c to the other side of the parantheses. 
-  We notice that "-> a b" is the same as "<- b a" so the "same" swap can be done in four different ways: Either by two "->" rewrites, two "<-" rewrites, one "<-" and one "->" rewrites or one "->" and one "<-" rewrite. Seeing that we have four different swaps to make, I would say we have 16 distinct proofs for Lemma comm_a.
+
+   We need one rewrite to swap the position of a and b and we need one rewrite to swap position of (_ + _) and c. How we swap these can be done in four different ways - we can swap (a+b) and c on the left-hand side while we swap b and a on the right-hand side in order to make them equal. 
+   When we have decided which pairs we swap we can now chose between using rewrite which different directions (-> and <-). We can do either (->,->), (<-, <-), (<-,->) or (->,<-). We should never run into an ambiguous rewrite term, like which a and b is it we are trying to specify seeing that if it ambiguous they are already equal and we have already swapped it to the correct position.
+   After that we see that we can either swap a and b first or we can swap (_ + _) and c first. 
+
+   All in all we are left with 4*4*2 = 32 distinct proofs for Lemma comm_c.
+
 
 *)
 
@@ -362,8 +375,6 @@ Qed.
 
 (* ********** *)
 
-(* DU NÅEDE HERTIL *)
-(* HUSK AT TJEKKE EXERCISE 4 FOR ANTAL KOMBINATIONER *)
 
 (* symmetry *)
 
@@ -396,10 +407,8 @@ Proof.
   intros a b c d.
   rewrite -> (plus_assoc a b (c + d)).
   rewrite <- (plus_assoc (a + b) c d).
-
-  Restart.
-Abort.
-(* You should replace "Abort." by a proof, if there is one. *)
+  reflexivity.
+Qed.
 
 (* ********** *)
 
@@ -411,8 +420,20 @@ Lemma mixed_a :
 forall a b c d : nat,
     (c + (a + b)) + d = (b + (d + c)) + a.
 Proof.
-Abort.
-(* You should replace "Abort." by a proof, if there is one. *)
+  intros a b c d.
+  rewrite -> (plus_comm (c + (a + b)) d).
+  rewrite -> (plus_comm c (a +b)).
+  rewrite -> (plus_assoc d (a + b) c).
+  rewrite -> (plus_comm (d + (a + b)) c).
+  rewrite -> (plus_assoc c d (a + b)).
+  rewrite -> (plus_comm (c + d) (a + b)).
+
+  rewrite -> (plus_comm (b + (d + c)) a).
+  rewrite -> (plus_comm d c).
+  rewrite -> (plus_assoc a b (c + d)).
+  rewrite -> (plus_assoc (a + b) c d).
+  reflexivity.
+Qed.
 
 (* ********** *)
 

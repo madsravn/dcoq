@@ -1,0 +1,35 @@
+Require Import Arith.
+
+Check plus_comm.
+
+(*
+plus_comm
+     : forall n m : nat, n + m = m + n
+*)
+
+Lemma comm_a :
+  forall a b c : nat,
+    (a + b) + c = c + (b + a).
+Proof.
+  intros a b c.
+  rewrite -> (plus_comm a b).
+  rewrite -> (plus_comm (b + a) c).
+  reflexivity.
+  
+  Restart.
+
+  intros a b c.
+  rewrite -> (plus_comm (a + b) c).
+  rewrite -> (plus_comm a b).
+  reflexivity.
+
+  Restart.
+
+  intros a b c.
+  rewrite <- (plus_comm c (a + b)).
+  rewrite <- (plus_comm b a).
+  
+
+
+
+Qed.

@@ -195,6 +195,7 @@ Lemma conjunction_is_commutative_two_ways :
 Proof.
   intros P Q.
   split.
+    Check (conjunction_is_commutative_one_way P Q).
     apply (conjunction_is_commutative_one_way P Q).
   apply (conjunction_is_commutative_one_way Q P).
 Qed.

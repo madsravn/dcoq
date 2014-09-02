@@ -13,7 +13,7 @@ Require Import unfold_tactic.
 Notation "A === B" := (beq_nat A B) (at level 70, right associativity).
 
 Definition unit_tests_for_factorial (fac : nat -> nat) :=
-  (fac 0 === 0)
+  (fac 0 === 1)
   &&
   (fac 1 === 1)
   &&
@@ -34,8 +34,25 @@ Proposition there_is_only_one_factorial_function :
     forall n : nat,
       fac1 n = fac2 n.
 Proof.
-Abort.
+  intros fac1 fac2 S_fac1 S_fac2 n.
+  unfold specification_of_factorial in S_fac1.
+  destruct S_fac1 as [H_fac1_bc H_fac1_ic].
+  unfold specification_of_factorial in S_fac2.
+  destruct S_fac2 as [H_fac2_bc H_fac2_ic].
 
+  induction n as [ | n' IHn'].
+
+  rewrite -> H_fac1_bc.
+  rewrite -> H_fac2_bc.
+  reflexivity.
+
+  rewrite -> (H_fac1_ic n').
+  rewrite -> (H_fac2_ic n').
+  rewrite -> IHn'.
+  
+  reflexivity.
+
+ Qed.
 (* ********** *)
 
 Fixpoint fac_ds (n : nat) :=
@@ -67,8 +84,16 @@ Qed.
 Theorem fac_v0_satisfies_the_specification_of_factorial :
   specification_of_factorial fac_v0.
 Proof.
-Abort.
+  unfold specification_of_factorial.
+  split.
+    unfold fac_v0.
+    apply unfold_fac_ds_bc.
+  intro n'.
+  unfold fac_v0.
+  apply (unfold_fac_ds_ic n').
+Qed.
 
+  
 (* ********** *)
 
 Fixpoint fac_acc (n a : nat) :=
@@ -101,7 +126,72 @@ Qed.
 Theorem fac_v1_satisfies_the_specification_of_factorial_first_try :
   specification_of_factorial fac_v1.
 Proof.
+  unfold specification_of_factorial.
+  unfold fac_v1.
+
+  split.
+  apply (unfold_fac_acc_bc 1).
+
+  intro n'.
+  rewrite -> (unfold_fac_acc_ic n' 1).
+  Check mult_1_r.
+  rewrite -> (mult_1_r (S n')).
+ Abort.
+
+Lemma about_fac_acc_tentative :
+  forall n a : nat,
+    fac_acc n a = a * (fac_acc n 1).
+Proof.
+Admitted.
+
+Theorem fac_v1_satisfies_the_specification_of_factorial_second_try :
+  specification_of_factorial fac_v1.
+Proof.
+  unfold specification_of_factorial.
+  unfold fac_v1.
+
+  split.
+  apply (unfold_fac_acc_bc 1).
+
+  intro n'.
+  rewrite -> (unfold_fac_acc_ic n' 1).
+  Check mult_1_r.
+  rewrite -> (mult_1_r (S n')).
+  rewrite -> (about_fac_acc_tentative n' (S n')).
+  reflexivity.
 Abort.
+
+Lemma about_fac_acc :
+  forall n a : nat,
+    fac_acc n a = a * (fac_acc n 1).
+Proof.
+  intros n a.
+  induction n as [ | n' IHn'].
+
+  rewrite -> (unfold_fac_acc_bc a).
+  rewrite -> (unfold_fac_acc_bc 1).
+  rewrite -> (mult_1_r a).
+  reflexivity.
+
+  rewrite -> (unfold_fac_acc_ic n' a).
+  rewrite -> (unfold_fac_acc_ic n' 1).
+  rewrite -> (mult_1_r (S n')).
+  
+  Restart.
+
+  intro n.
+  induction n as [ | n' IHn'].
+  intro a.
+  rewrite -> (unfold_fac_acc_bc a).
+  rewrite -> (unfold_fac_acc_bc 1).
+  rewrite -> (mult_1_r a).
+  reflexivity.
+
+  intro a.
+  rewrite -> (unfold_fac_acc_ic n' a).
+  rewrite -> (unfold_fac_acc_ic n' 1).
+Abort. (* DU NÅEDE HERTIL *)
+(* OG DU MANGLER AT SKRIVE NOGET IND ET ANDET STED OGSÅ *)
 
 (* ********** *)
 

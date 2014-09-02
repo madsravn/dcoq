@@ -208,7 +208,12 @@ Lemma f_equal_S :
   forall x y : nat,
     x = y -> S x = S y.
 Proof.
-Abort.
+  intros x y.
+  intro H_xy.
+  rewrite -> H_xy.
+  reflexivity.
+Qed.
+
 
 (* ********** *)
 
@@ -229,13 +234,26 @@ Definition specification_of_addition (add : nat -> nat -> nat) :=
    about a function that satisfies the specification of addition:
 *)
 
+(*
+  NAME => DENOTATION. Like Three => 3 and Trois => 3. So the names point to a denotation. This is also valid in Coq so a Definition defines a name to point a name to a function.
+*)
+
 Proposition addition_bc_left :
   forall (add : nat -> nat -> nat),
     specification_of_addition add ->
     forall j : nat,
       add 0 j = j.
 Proof.
-Abort.
+  intro add.
+  intro S_add.
+  intro j.
+  unfold specification_of_addition in S_add.
+  destruct S_add as [H_add_bc _].
+(* It can be done like this - but not this week!
+  apply H_add_bc.
+*)
+  apply (H_add_bc j).
+Qed.
 
 (* ********** *)
 
@@ -245,7 +263,14 @@ Proposition addition_ic_left :
     forall i' j : nat,
       add (S i') j = S (add i' j).
 Proof.
-Abort.
+  intro add.
+  intro S_add.
+  intros i' j.
+  unfold specification_of_addition in S_add.
+  destruct S_add as [_ H_add_ic].
+  apply (H_add_ic i' j).
+Qed.
+
 
 Corollary addition_ic_left_twice :
   forall (add : nat -> nat -> nat),
@@ -253,7 +278,25 @@ Corollary addition_ic_left_twice :
     forall i'' j : nat,
       add (S (S i'')) j = S (S (add i'' j)).
 Proof.
-Abort.
+  intro add.
+  intro S_add.
+  intros i'' j.
+  Check (addition_ic_left add S_add (S i'') j).
+  rewrite -> (addition_ic_left add S_add (S i'') j).
+  rewrite -> (addition_ic_left add S_add i'' j).
+  reflexivity.
+
+  Restart.
+
+  intro add.
+  intro S_add.
+  intros i'' j.
+  Check (addition_ic_left add S_add (S i'') j).
+  rewrite -> (addition_ic_left add S_add (S i'') j).
+  (*apply (f_equal_S (add (S i'') j) (S (add i'') j)).*)
+  Abort.
+
+
 
 (* ********** *)
 
@@ -263,7 +306,43 @@ Proposition addition_bc_right :
     forall i : nat,
       add i 0 = i.
 Proof.
-Abort.
+  intros add S_add.
+  unfold specification_of_addition in S_add.
+  destruct S_add as [H_add_bc H_add_ic].
+  intro i.
+  destruct i as [ | i']. (* 0 or succesor of other number *)
+  
+  apply (H_add_bc 0).
+  
+  destruct i' as [ | i''].
+
+  rewrite -> (H_add_ic 0 0).
+  apply f_equal_S.
+
+  apply (H_add_bc 0).
+
+  Restart.
+
+  intros add S_add.
+  unfold specification_of_addition in S_add.
+  destruct S_add as [H_add_bc H_add_ic].
+  intro i.
+  induction i as [ | n' IHn']. (* 0 and induction case *)
+
+  (* IMPORTANT FOR EXAM *)
+  apply (H_add_bc 0).
+
+(*
+  revert IHn'.
+  revert n'.
+*)
+
+  rewrite -> (H_add_ic n' 0).
+  apply f_equal_S.
+  apply IHn'.
+Qed.
+
+
 
 (* ********** *)
 

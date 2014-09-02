@@ -17,7 +17,17 @@ Definition unit_tests_for_multiplication (mul : nat -> nat -> nat) :=
   &&
   (mul 0 1 === 0)
   &&
-  (mul 1 1 === 1).
+  (mul 1 1 === 1)
+  &&
+  (mul 2 1 === 2)
+  &&
+  (mul 2 0 === 0)
+  && 
+  (mul 2 2 === 4)
+  &&
+  (mul 0 2 === 0)
+  &&
+  (mul 1 2 === 2).
 
 (* Exercise 0: flesh out the unit tests above with more tests. *)
 
@@ -30,6 +40,15 @@ Compute (unit_tests_for_multiplication mult).
 
 (* Exercise 1: why is there a space in the comment just above
    on the right of the infix notation for multiplication?
+
+  Answer: It seems that when using the Notation ARG that the
+  ARG is composed of tokens separated by spaces. Seeing that 
+  Notation "a*b" := (mult a b) will yield a parse error. So
+  I would say it's because that the definition of the infix
+  operator is Notation "a * b" that we write it like that.
+  Though we can still utilize the infix operator without
+  the spaces it was defined with seeing that
+  Compute(3*4) yields a correct response of 12.
 *)
 
 (* ********** *)
@@ -49,6 +68,38 @@ Definition specification_of_multiplication (mul : nat -> nat -> nat) :=
 *)
 
 Check plus_0_l.
+Check mult_0_l.
+
+Proposition multiplication_absorbant_left :
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall j : nat,
+      mult 0 j = 0.
+Proof.
+  intro mult.
+  intro S_mult.
+  intro j.
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [S_mult_0 _].
+  apply (S_mult_0 j).
+Qed.
+
+
+(* IS THIS EVEN CORRECT? *)
+Proposition multiplication_absorbant_right : 
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall j : nat,
+      j *  0 = 0.
+Proof.
+  intro mult.
+  intro S_mult.
+  intro j.
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [s_mult_0 _].
+  apply (mult_comm j 0).
+Qed.
+
 
 (* Exercise:
 

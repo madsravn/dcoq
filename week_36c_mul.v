@@ -70,6 +70,11 @@ Definition specification_of_multiplication (mul : nat -> nat -> nat) :=
 Check plus_0_l.
 Check mult_0_l.
 
+(*
+    show that 0 is left-absorbant for multiplication
+    (aka mult_0_l in Arith)
+*)
+
 Proposition multiplication_absorbant_left :
   forall (mult : nat -> nat -> nat),
     specification_of_multiplication mult ->
@@ -85,21 +90,53 @@ Proof.
 Qed.
 
 
-(* IS THIS EVEN CORRECT? *)
+(*
+    show that 0 is right-absorbant for multiplication
+    (aka mult_0_r in Arith)
+*)
+
+
 Proposition multiplication_absorbant_right : 
   forall (mult : nat -> nat -> nat),
     specification_of_multiplication mult ->
     forall j : nat,
-      j *  0 = 0.
+      mult j 0 = 0.
 Proof.
   intro mult.
   intro S_mult.
-  intro j.
   unfold specification_of_multiplication in S_mult.
-  destruct S_mult as [s_mult_0 _].
-  apply (mult_comm j 0).
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  intro j.
+
+  induction j as [ | n' IHn'].
+  
+  (* Base case: *)
+  apply (H_mult_bc 0).
+
+  (* Induction case: *)
+  rewrite -> (H_mult_ic n' 0).
+  rewrite -> (plus_0_l).
+  apply IHn'.
 Qed.
 
+Proposition multiplication_neutral_left :
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall j : nat,
+      mult 1 j = j.
+Proof.
+  intro mult.
+  intro S_mult.
+  induction j as [ | n' IHn'].
+
+  (* Base case: *)
+  apply (multiplication_absorbant_right).
+  apply (S_mult).
+
+  (* Induction case: *)
+
+
+Check(mult_0_l).
 
 (* Exercise:
 

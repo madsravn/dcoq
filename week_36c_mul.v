@@ -89,6 +89,14 @@ Proof.
   apply (S_mult_0 j).
 Qed.
 
+Lemma multiplication_bc :
+    forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall j : nat,
+      mult 0 j = 0.
+Proof.
+  apply (multiplication_absorbant_left).
+Qed.
 
 (*
     show that 0 is right-absorbant for multiplication
@@ -127,14 +135,16 @@ Proposition multiplication_neutral_left :
 Proof.
   intro mult.
   intro S_mult.
-  induction j as [ | n' IHn'].
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_1 H_2].
+  intro j.
+  rewrite -> (H_2 0 j).
+  rewrite -> (H_1 j).
+  rewrite -> (plus_0_r j).
+  reflexivity.
+ Qed.
 
-  (* Base case: *)
-  apply (multiplication_absorbant_right).
-  apply (S_mult).
-
-  (* Induction case: *)
-
+(* COULD HAVE BEEN DONE WITH INDUCTION! *)
 
 Check(mult_0_l).
 

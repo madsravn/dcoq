@@ -127,6 +127,8 @@ Proof.
   apply IHn'.
 Qed.
 
+
+(* GIV BEDRE NAVNE! *)
 Proposition multiplication_neutral_left :
   forall (mult : nat -> nat -> nat),
     specification_of_multiplication mult ->

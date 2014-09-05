@@ -138,31 +138,182 @@ Proof.
   intro mult.
   intro S_mult.
   unfold specification_of_multiplication in S_mult.
-  destruct S_mult as [H_1 H_2].
+  destruct S_mult as [H_mult_bc H_mult_ic].
   intro j.
-  rewrite -> (H_2 0 j).
-  rewrite -> (H_1 j).
+  rewrite -> (H_mult_ic 0 j).
+  rewrite -> (H_mult_bc j).
   rewrite -> (plus_0_r j).
   reflexivity.
  Qed.
 
 (* COULD HAVE BEEN DONE WITH INDUCTION! *)
 
+(*
+    show that 1 is right-neutral for multiplication
+    (aka mult_1_r in Arith)
+*)
+Proposition multiplication_neutral_right :
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall j : nat,
+      mult j 1 = j.
+Proof.
+  intro mult.
+  intro S_mult.
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  intro j.
+  induction j as [ | n' IHn'].
+
+  (* Base case: *)
+  apply (H_mult_bc 1).
+
+  (* Induction case: *)
+  rewrite -> (H_mult_ic n' 1).
+  Check(IHn').
+  rewrite -> (IHn').
+  (* How would we rewrite (S n') to 1 + n'? *)
+  reflexivity.
+Qed.
+
+(*
+   show that multiplication is commutative
+   (aka mult_comm in Arith)
+*)
+
+Check(mult_comm).
+
+Proposition multiplication_ic_left : 
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall (x y : nat), 
+      y + mult x y = mult (S x) y.
+Proof.
+  intro mult.
+  intro S_mult.
+  intros x y.
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  rewrite -> (H_mult_ic x y).
+  reflexivity.
+Qed.
+
+Proposition plus_1_S : 
+  forall n : nat,
+    S n = plus 1 n.
+Proof.
+  intro n.
+  unfold_tactic plus.
+Qed.
+
+(*  intro add.
+  intro S_add.
+  unfold specification_of_addition in S_add.
+  destruct S_add as [H_add_bc H_add_ic].
+  intro n.
+  
+  induction n as [ | n' IHn'].
+  rewrite -> (H_add_bc 1).
+  reflexivity.
+
+  rewrite -> (IHn').
+  rewrite <- (H_add_ic n' 1).
+  rewrite -> (IHn').
+  reflexivity.
+Qed.
+*)
+
+Proposition multiplication_ic_right :
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall (x y : nat),
+      x + mult x y = mult x (S y).
+Proof.
+  intro mult.
+  intro S_mult.
+  intros x y.
+  assert (mul_s := S_mult).
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  induction x as [ | n' IHn'].
+  
+  (* Base case: *)
+  rewrite -> (H_mult_bc).
+  rewrite -> (multiplication_absorbant_left mult mul_s).
+  rewrite -> (plus_0_l 0).
+  reflexivity.
+
+  (* Induction case: *)
+  rewrite -> (H_mult_ic n' y).
+  rewrite -> (H_mult_ic n' (S y)).
+  rewrite <- (IHn').
+  Check(plus_assoc).
+  rewrite -> (plus_assoc (S n') y (mult n' y)).
+  rewrite -> (plus_assoc (S y) n' (mult n' y)).
+  rewrite -> (plus_1_S n').
+  rewrite -> (plus_1_S y).
+  rewrite -> (plus_comm (1 + n' + y) (mult n' y)).
+  rewrite -> (plus_comm (1 + y + n') (mult n' y)).
+  rewrite -> (plus_comm (1 + n') y).
+  rewrite -> (plus_comm 1 n').
+  rewrite -> (plus_assoc y n' 1).
+  rewrite -> (plus_assoc (mult n' y) (y + n') 1).
+
+  rewrite -> (plus_comm (1 + y) n').
+  rewrite -> (plus_comm 1 y).
+  rewrite -> (plus_assoc n' y 1).
+
+
+  rewrite -> (plus_assoc (mult n' y) (n' + y) 1).
+  rewrite -> (plus_comm n' y).
+  reflexivity.
+Qed.
+
+
+
+Proposition multiplication_is_commutative :
+  forall (mult : nat -> nat -> nat),
+    specification_of_multiplication mult ->
+    forall (x y : nat),
+      mult x y = mult y x.
+Proof.
+  intro mult.
+  intro S_mult.
+  assert(mul_s := S_mult).
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  intros x y.
+  induction x as [ | n' IHn'].
+
+  (* Base case: *)
+
+  rewrite -> (multiplication_absorbant_left mult mul_s).
+  rewrite -> (multiplication_absorbant_right mult mul_s).
+  reflexivity.
+
+
+  (* Induction case: *)
+  rewrite -> (H_mult_ic n' y).
+  rewrite -> (IHn').
+  rewrite -> (multiplication_ic_right mult mul_s).
+  reflexivity.
+Qed.
+
 Check(mult_0_l).
 
 (* Exercise:
 
    * show that 0 is left-absorbant for multiplication
-     (aka mult_0_l in Arith)
+     (aka mult_0_l in Arith) x
 
    * show that 0 is right-absorbant for multiplication
-     (aka mult_0_r in Arith)
+     (aka mult_0_r in Arith) x
 
    * show that 1 is left-neutral for multiplication
-     (aka mult_1_l in Arith)
+     (aka mult_1_l in Arith) x
 
    * show that 1 is right-neutral for multiplication
-     (aka mult_1_r in Arith)
+     (aka mult_1_r in Arith) x
 
    * show that multiplication is commutative
      (aka mult_comm in Arith)

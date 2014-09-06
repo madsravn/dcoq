@@ -70,33 +70,39 @@ Definition specification_of_multiplication (mul : nat -> nat -> nat) :=
 Check plus_0_l.
 Check mult_0_l.
 
+(* Helper for later *)
+(* Would we rather use unfold plus or the unfold_tactic with plus? *)
+Proposition plus_1_S : 
+  forall n : nat,
+    S n = plus 1 n.
+Proof.
+  intro n.
+  (* unfold_tactic plus. *)
+  unfold plus.
+  reflexivity.
+Qed.
+
+
 (*
     show that 0 is left-absorbant for multiplication
     (aka mult_0_l in Arith)
 *)
 
-Proposition multiplication_absorbant_left :
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+Proposition multiplication_bc_left :
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall j : nat,
-      mult 0 j = 0.
+      mul 0 j = 0.
 Proof.
   intro mult.
   intro S_mult.
   intro j.
   unfold specification_of_multiplication in S_mult.
-  destruct S_mult as [S_mult_0 _].
-  apply (S_mult_0 j).
+  destruct S_mult as [H_mult_bc _].
+  rewrite -> (H_mult_bc j).
+  reflexivity.
 Qed.
 
-Lemma multiplication_bc :
-    forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
-    forall j : nat,
-      mult 0 j = 0.
-Proof.
-  apply (multiplication_absorbant_left).
-Qed.
 
 (*
     show that 0 is right-absorbant for multiplication
@@ -104,11 +110,11 @@ Qed.
 *)
 
 
-Proposition multiplication_absorbant_right : 
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+Proposition multiplication_bc_right : 
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall j : nat,
-      mult j 0 = 0.
+      mul j 0 = 0.
 Proof.
   intro mult.
   intro S_mult.
@@ -123,17 +129,20 @@ Proof.
 
   (* Induction case: *)
   rewrite -> (H_mult_ic n' 0).
-  rewrite -> (plus_0_l).
+  rewrite -> (plus_0_l (mult n' 0)).
   apply IHn'.
 Qed.
 
+(*
+   show that 1 is left-neutral for multiplication
+   (aka mult_1_l in Arith) x
+*)
 
-(* GIV BEDRE NAVNE! *)
-Proposition multiplication_neutral_left :
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+Proposition multiplication_1_neutral_left :
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall j : nat,
-      mult 1 j = j.
+      mul 1 j = j.
 Proof.
   intro mult.
   intro S_mult.
@@ -152,11 +161,12 @@ Proof.
     show that 1 is right-neutral for multiplication
     (aka mult_1_r in Arith)
 *)
-Proposition multiplication_neutral_right :
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+
+Proposition multiplication_1_neutral_right :
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall j : nat,
-      mult j 1 = j.
+      mul j 1 = j.
 Proof.
   intro mult.
   intro S_mult.
@@ -172,7 +182,8 @@ Proof.
   rewrite -> (H_mult_ic n' 1).
   Check(IHn').
   rewrite -> (IHn').
-  (* How would we rewrite (S n') to 1 + n'? *)
+  symmetry.
+  rewrite -> (plus_1_S n').
   reflexivity.
 Qed.
 
@@ -184,10 +195,10 @@ Qed.
 Check(mult_comm).
 
 Proposition multiplication_ic_left : 
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall (x y : nat), 
-      y + mult x y = mult (S x) y.
+      y + mul x y = mul (S x) y.
 Proof.
   intro mult.
   intro S_mult.
@@ -198,36 +209,11 @@ Proof.
   reflexivity.
 Qed.
 
-Proposition plus_1_S : 
-  forall n : nat,
-    S n = plus 1 n.
-Proof.
-  intro n.
-  unfold_tactic plus.
-Qed.
-
-(*  intro add.
-  intro S_add.
-  unfold specification_of_addition in S_add.
-  destruct S_add as [H_add_bc H_add_ic].
-  intro n.
-  
-  induction n as [ | n' IHn'].
-  rewrite -> (H_add_bc 1).
-  reflexivity.
-
-  rewrite -> (IHn').
-  rewrite <- (H_add_ic n' 1).
-  rewrite -> (IHn').
-  reflexivity.
-Qed.
-*)
-
 Proposition multiplication_ic_right :
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall (x y : nat),
-      x + mult x y = mult x (S y).
+      x + mul x y = mul x (S y).
 Proof.
   intro mult.
   intro S_mult.
@@ -239,7 +225,7 @@ Proof.
   
   (* Base case: *)
   rewrite -> (H_mult_bc).
-  rewrite -> (multiplication_absorbant_left mult mul_s).
+  rewrite -> (multiplication_bc_left mult mul_s (S y)).
   rewrite -> (plus_0_l 0).
   reflexivity.
 
@@ -247,11 +233,14 @@ Proof.
   rewrite -> (H_mult_ic n' y).
   rewrite -> (H_mult_ic n' (S y)).
   rewrite <- (IHn').
-  Check(plus_assoc).
+
   rewrite -> (plus_assoc (S n') y (mult n' y)).
   rewrite -> (plus_assoc (S y) n' (mult n' y)).
+
   rewrite -> (plus_1_S n').
   rewrite -> (plus_1_S y).
+
+  (* There must be an easier way to align the rest *)
   rewrite -> (plus_comm (1 + n' + y) (mult n' y)).
   rewrite -> (plus_comm (1 + y + n') (mult n' y)).
   rewrite -> (plus_comm (1 + n') y).
@@ -263,7 +252,6 @@ Proof.
   rewrite -> (plus_comm 1 y).
   rewrite -> (plus_assoc n' y 1).
 
-
   rewrite -> (plus_assoc (mult n' y) (n' + y) 1).
   rewrite -> (plus_comm n' y).
   reflexivity.
@@ -272,10 +260,10 @@ Qed.
 
 
 Proposition multiplication_is_commutative :
-  forall (mult : nat -> nat -> nat),
-    specification_of_multiplication mult ->
+  forall (mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
     forall (x y : nat),
-      mult x y = mult y x.
+      mul x y = mul y x.
 Proof.
   intro mult.
   intro S_mult.
@@ -287,19 +275,98 @@ Proof.
 
   (* Base case: *)
 
-  rewrite -> (multiplication_absorbant_left mult mul_s).
-  rewrite -> (multiplication_absorbant_right mult mul_s).
+  rewrite -> (multiplication_bc_left mult mul_s y).
+  rewrite -> (multiplication_bc_right mult mul_s y).
   reflexivity.
 
 
   (* Induction case: *)
   rewrite -> (H_mult_ic n' y).
   rewrite -> (IHn').
-  rewrite -> (multiplication_ic_right mult mul_s).
+  rewrite -> (multiplication_ic_right mult mul_s y n').
   reflexivity.
 Qed.
 
 Check(mult_0_l).
+
+(* 
+ * show that the specification of multiplication is unique
+ *)
+
+Proposition there_is_only_one_multiplication : 
+  forall mult1 mult2 : nat -> nat -> nat,
+    specification_of_multiplication mult1 ->
+    specification_of_multiplication mult2 ->
+    forall x y : nat,
+      mult1 x y = mult2 x y.
+Proof.
+  intros mult1 mult2 S_mult1 S_mult2 x y.
+  induction x as [ | n' IHn'].
+  rewrite -> (multiplication_bc_left mult1 S_mult1 y).
+  rewrite -> (multiplication_bc_left mult2 S_mult2 y).
+  reflexivity.
+
+  rewrite <- (multiplication_ic_left mult1 S_mult1 n' y).
+  rewrite <- (multiplication_ic_left mult2 S_mult2 n' y).
+  rewrite -> (IHn').
+  reflexivity.
+Qed.
+
+
+(*
+   * implement multiplication,
+     verify that your implementation passes the unit tests, and
+     prove that your implementation satisfies the specification
+*)
+
+Fixpoint mult_v1 (x y : nat) : nat :=
+  match x with
+    | 0 => 0
+    | S x' => y + (mult_v1 x' y)
+  end.
+
+
+Compute(unit_tests_for_multiplication mult_v1).
+
+Lemma unfold_mult_v1_bc :
+  forall (y: nat),
+    mult_v1 0 y = 0.
+Proof.
+  unfold_tactic mult_v1.
+Qed.
+
+(* Is this how we would do it otherwise? *)
+Lemma unfold_mult_v1_bc2 :
+  forall (y: nat),
+    mult_v1 0 y = 0.
+Proof.
+  intro y.
+  unfold mult_v1.
+  reflexivity.
+Qed.
+
+Lemma unfold_mult_v1_ic : 
+  forall (i' j : nat),
+    mult_v1 (S i') j = j + mult_v1 i' j. 
+Proof.
+  unfold_tactic mult_v1.
+Qed.
+
+
+
+Theorem mult_v1_satisfies_the_specification_of_multiplication : 
+  specification_of_multiplication mult_v1.
+Proof.
+  unfold specification_of_multiplication.
+  split.
+
+  apply unfold_mult_v1_bc.
+
+  apply unfold_mult_v1_ic.
+
+Qed.
+
+
 
 (* Exercise:
 
@@ -324,6 +391,107 @@ Check(mult_0_l).
      verify that your implementation passes the unit tests, and
      prove that your implementation satisfies the specification
 *)
+
+(*
+    show that multiplication distributes over addition on the left
+    (aka mult_plus_distr_l in Arith), and
+*)
+
+Check(mult_plus_distr_l).
+
+Proposition multiplication_plus_distribution_left :
+  forall(mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
+    forall(x y z : nat),
+      mul x (y + z) = mul x y + mul x z.
+Proof.
+  intro mult.
+  intro S_mult.
+  intros x y z.
+  assert(mul_s := S_mult).
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  induction x as [ | n' IHn'].
+  rewrite -> (multiplication_bc_left mult mul_s (y + z)).
+  rewrite -> (multiplication_bc_left mult mul_s y).
+  rewrite -> (multiplication_bc_left mult mul_s z).
+  rewrite -> (plus_0_l 0).
+  reflexivity.
+
+  rewrite -> (H_mult_ic n' (y + z)).
+  rewrite -> (H_mult_ic n' y).
+  rewrite -> (H_mult_ic n' z).
+  rewrite -> (IHn').
+  rewrite -> (plus_assoc (y + mult n' y) z (mult n' z)).
+  rewrite -> (plus_assoc (y + z) (mult n' y) (mult n' z)).
+  rewrite -> (plus_comm y (mult n' y)).
+  Check(plus_assoc).
+  rewrite <- (plus_assoc (mult n' y) y z).
+  rewrite -> (plus_comm (mult n' y) (y + z)).
+  reflexivity.
+Qed.
+
+(*
+   show that multiplication is associative
+   (aka mult_assoc in Arith),
+*)
+
+Proposition multiplication_is_associative : 
+  forall(mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
+    forall (x y z : nat),
+      mul x (mul y z) = mul (mul x y) z.
+Proof.
+  intro mult.
+  intro S_mult.
+  assert(mul_s := S_mult).
+  unfold specification_of_multiplication in S_mult.
+  destruct S_mult as [H_mult_bc H_mult_ic].
+  intros x y z.
+  induction x as [ | n' IHn'].
+
+  (* Base case: *)
+  rewrite -> (multiplication_bc_left mult mul_s (mult y z)).
+  rewrite -> (multiplication_bc_left mult mul_s y).
+  rewrite -> (multiplication_bc_left mult mul_s z).
+  reflexivity.
+
+  (* Induction case: *)
+
+  rewrite -> (H_mult_ic n' (mult y z)).
+  rewrite -> (H_mult_ic n' y).
+  rewrite -> (IHn').
+  rewrite -> (multiplication_is_commutative mult mul_s (y + mult n' y) z).
+  rewrite -> (multiplication_plus_distribution_left mult mul_s z y (mult n' y)).
+  rewrite -> (multiplication_is_commutative mult mul_s (mult n' y) z).
+  rewrite -> (multiplication_is_commutative mult mul_s y z).
+  reflexivity.
+Qed.
+
+
+(*
+    show that multiplication distributes over addition on the right
+    (aka mult_plus_distr_r in Arith).
+*)
+
+Check(mult_plus_distr_r).
+
+Proposition multiplication_plus_distribution_right :
+  forall(mul : nat -> nat -> nat),
+    specification_of_multiplication mul ->
+    forall (x y z : nat),
+      mul (x + y) z = mul x z + mul y z.
+Proof.
+  intro mult.
+  intro S_mult.
+  assert(mul_s := S_mult).
+  intros x y z.
+  rewrite -> (multiplication_is_commutative mult mul_s (x + y) z).
+  rewrite -> (multiplication_is_commutative mult mul_s x z).
+  rewrite -> (multiplication_is_commutative mult mul_s y z).
+  apply (multiplication_plus_distribution_left mult mul_s z x y).
+Qed.
+
 
 (* ********** *)
 

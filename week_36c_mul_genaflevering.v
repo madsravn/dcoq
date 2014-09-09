@@ -69,14 +69,14 @@ Definition specification_of_multiplication (mul : nat -> nat -> nat) :=
    plus_0_l, plus_0_r, plus_comm, and plus_assoc.
 *)
 
-Lemma unfold_add_v1_bc :
+Lemma unfold_plus_bc :
   forall j : nat,
     plus 0 j = j.
 Proof.
   unfold_tactic plus.
 Qed.
 
-Lemma unfold_add_v1_ic :
+Lemma unfold_plus_ic :
   forall i' j : nat,
     plus (S i') j = S (plus i' j).
 Proof.
@@ -90,11 +90,12 @@ Proposition plus_1_S :
 Proof.
   intro n.
   induction n as [ | n' IHn'].
-  rewrite -> (plus_0_r 1).
-  reflexivity.
-  rewrite -> (unfold_add_v1_ic).
-  rewrite -> (plus_0_l (S n')).
-  reflexivity.
+    rewrite -> (plus_0_r 1).
+    reflexivity.
+    
+    rewrite -> (unfold_plus_ic).
+    rewrite -> (plus_0_l (S n')).
+    reflexivity.
 Qed.
 
 
@@ -142,13 +143,13 @@ Proof.
 
   induction j as [ | n' IHn'].
   
-  (* Base case: *)
-  apply (H_mult_bc 0).
+    (* Base case: *)
+    apply (H_mult_bc 0).
 
-  (* Induction case: *)
-  rewrite -> (H_mult_ic n' 0).
-  rewrite -> (plus_0_l (mult n' 0)).
-  apply IHn'.
+    (* Induction case: *)
+    rewrite -> (H_mult_ic n' 0).
+    rewrite -> (plus_0_l (mult n' 0)).
+    apply IHn'.
 Qed.
 
 (*

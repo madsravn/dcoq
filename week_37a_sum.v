@@ -41,6 +41,24 @@ Proof.
   unfold_tactic plus.
 Qed.
 
+Lemma plus_1_S :
+  forall n :nat,
+    n + 1 = S n.
+Proof.
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+  rewrite -> (unfold_plus_bc 1).
+  reflexivity.
+
+  (* Inductive case: *)
+  rewrite -> (unfold_plus_ic n' 1).
+  rewrite -> (IHn').
+  reflexivity.
+Qed.
+
+
 Lemma unfold_mult_bc :
   forall y : nat,
     0 * y = 0.
@@ -120,7 +138,20 @@ Theorem there_is_only_one_sum :
            (n : nat),
       sum1 f n = sum2 f n.
 Proof.
-Abort.
+  intros sum1 sum2.
+  intros S_sum1 S_sum2.
+  intros f n.
+  unfold specification_of_sum in S_sum1.
+  unfold specification_of_sum in S_sum2.
+  destruct (S_sum1 f) as [H_sum_bc1 H_sum_ic1].
+  destruct (S_sum2 f) as [H_sum_bc2 H_sum_ic2].
+  clear S_sum1.
+
+  Admitted.
+
+
+
+
 (* Replace "Abort." with a proof. *)
 
 (* ********** *)
@@ -133,7 +164,23 @@ Lemma about_sum_0 :
     forall n : nat,
       sum (fun i => 0) n = 0.
 Proof.
-Abort.
+  intro sum.
+  intro S_sum.
+  intro n.
+  induction n as [ | n' IHn'].
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun _ : nat => 0)) as [H_sum_bc H_sum_ic].
+  apply H_sum_bc.
+
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun _ : nat => 0)) as [H_sum_bc H_sum_ic].
+  rewrite -> (H_sum_ic n').
+  rewrite -> (plus_0_r (sum (fun _ : nat => 0) n')).
+  apply IHn'.
+Qed.
+
+
+
 (* Replace "Abort." with a proof. *)
 
 (* ***** *)
@@ -144,10 +191,43 @@ Lemma about_sum_1 :
     forall n : nat,
       sum (fun i => 1) n = S n.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro sum.
+  intro S_sum.
+  intro n.
+  induction n as [ | n' IHn'].
+  (* Base case: *)
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun _ : nat => 1)) as [H_sum_bc H_sum_ic].
+  apply H_sum_bc.
+
+  (* Inductive case: *)
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun _ : nat => 1)) as [H_sum_bc H_sum_ic].
+  rewrite -> (H_sum_ic n').
+  rewrite -> (IHn').
+  (* Den her egenskab skal vises! *)
+  rewrite <- (plus_n_Sm (S n') 0).
+  rewrite -> (plus_0_r (S n')).
+  reflexivity.
+Qed.
 
 (* ***** *)
+
+Lemma first_part_of_left :
+  forall n : nat,
+    n * (n + 1) + 2 * (n + 1) = n*n + n + n + n + 2.
+Proof.
+  intro n.
+  rewrite -> (mult_plus_distr_l n n 1).
+  rewrite -> (mult_plus_distr_l 2 n 1).
+  Check(plus_assoc).
+  rewrite -> (plus_assoc (n * n + n * 1) (2 * n) (2 * 1)).
+
+  rewrite -> (unfold_mult_ic 1 n).
+
+Admitted.
+  
+
 
 Lemma about_sum_identity :
   forall sum : (nat -> nat) -> nat -> nat,
@@ -155,8 +235,38 @@ Lemma about_sum_identity :
     forall n : nat,
       2 * sum (fun i => i) n = n * S n.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro sum.
+  intro S_sum.
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun i : nat => i)) as [H_sum_bc H_sum_ic].
+  Check(H_sum_bc).
+  rewrite -> (H_sum_bc).
+  rewrite -> (mult_0_l 1).
+  rewrite -> (mult_0_r 2).
+  reflexivity.
+
+  (* Inductive case: *)
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun i : nat => i)) as [H_sum_bc H_sum_ic].
+  rewrite -> (H_sum_ic n').
+  rewrite -> (mult_plus_distr_l 2 (sum (fun i : nat => i) n') (S n')).
+  rewrite -> (IHn').
+  
+  Check(plus_1_S).
+  rewrite <- (plus_1_S n').
+  rewrite <- (plus_1_S (n' +1)).
+  rewrite -> (mult_plus_distr_l n' n' 1).
+  rewrite -> (mult_plus_distr_l 2 n' 1).
+  rewrite -> (mult_comm (n' + 1) (n' + 1 + 1)).
+  rewrite -> (mult_plus_distr_l (n' + 1 + 1) n' 1).
+Admitted.
+
+
+
 
 (* ***** *)
 
@@ -166,7 +276,32 @@ Lemma about_sum_even_numbers :
     forall n : nat,
       sum (fun i => 2 * i) n = n * S n.
 Proof.
-Abort.
+  intro sum.
+  intro S_sum.
+  intro n.
+  induction n as [ | n' IHn'].
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun i : nat => 2 * i)) as [H_sum_bc H_sum_ic].
+  clear S_sum.
+  Check(H_sum_bc).
+  rewrite -> (H_sum_bc).
+  rewrite -> (mult_0_r 2).
+  rewrite -> (mult_0_l 1).
+  reflexivity.
+
+  (* Inductive case: *)
+  unfold specification_of_sum in S_sum.
+  destruct (S_sum (fun i : nat => 2 * i)) as [H_sum_bc H_sum_ic].
+  clear S_sum.
+  rewrite -> (H_sum_ic n').
+  rewrite -> (IHn').
+  rewrite <- (plus_1_S n').
+  rewrite <- (plus_1_S (n' + 1)).
+  rewrite -> (mult_plus_distr_l n' n' 1).
+  rewrite -> (mult_plus_distr_l 2 n' 1).
+  rewrite 
+
+
 (* Replace "Abort." with a proof. *)
 
 (* ***** *)

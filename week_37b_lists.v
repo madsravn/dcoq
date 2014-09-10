@@ -17,6 +17,38 @@ Require Import Arith Bool List.
    Infix :: is cons, and nil is the empty list.
 *)
 
+
+(* Helper stuff *)
+
+Lemma unfold_plus_bc :
+  forall j : nat,
+    plus 0 j = j.
+Proof.
+  unfold_tactic plus.
+Qed.
+
+Lemma unfold_plus_ic :
+  forall i' j : nat,
+    plus (S i') j = S (plus i' j).
+Proof.
+  unfold_tactic plus.
+Qed.
+
+(* Helper for later *)
+Proposition plus_1_S :
+  forall n : nat,
+    S n = plus 1 n.
+Proof.
+  intro n.
+  induction n as [ | n' IHn'].
+    rewrite -> (plus_0_r 1).
+    reflexivity.
+    
+    rewrite -> (unfold_plus_ic).
+    rewrite -> (plus_0_l (S n')).
+    reflexivity.
+Qed.
+
 Compute 3 :: 2 :: 1 :: nil.
 (*
      = 3 :: 2 :: 1 :: nil
@@ -77,7 +109,10 @@ Proof.
   intros T length_1 length_2.
 
   unfold specification_of_length.
-  intros [Hbc1 Hic1] [Hbc2 Hic2].
+  intros l1 l2.
+  destruct l1 as [Hbc1 Hic1].
+  destruct l2 as [Hbc2 Hic2].
+  (* intros [Hbc1 Hic1] [Hbc2 Hic2]. *)
 
   intro xs.
   induction xs as [ | x xs' IHxs'].
@@ -205,15 +240,54 @@ Lemma about_length_acc :
   forall (T : Type) (xs : list T) (a : nat),
     length_acc T xs a = (length_acc T xs 0) + a.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intros xs.
+  induction xs as [ | x xs' IHx'].
+
+  (* Base case: *)
+  intro a.
+  rewrite -> (unfold_length_acc_base_case T a).
+  rewrite -> (unfold_length_acc_base_case T 0).
+  rewrite -> (plus_0_l a).
+  reflexivity.
+
+  (* Induction case: *)
+  intro a.
+  rewrite -> (unfold_length_acc_induction_case T x xs' a).
+  rewrite -> (unfold_length_acc_induction_case T x xs' 0).
+  rewrite -> (IHx' (S a)).
+
+  rewrite -> (IHx' 1).
+  rewrite -> (plus_comm (length_acc T xs' 0 + 1) a).
+  rewrite -> (plus_assoc a (length_acc T xs' 0) 1).
+  rewrite -> (plus_comm a (length_acc T xs' 0)).
+  rewrite -> (plus_1_S a).
+  rewrite -> (plus_comm 1 a).
+  rewrite -> (plus_assoc (length_acc T xs' 0) a 1).
+  reflexivity.
+Qed.
+
 
 Proposition length_v2_fits_the_specification_of_length :
   forall T : Type,
     specification_of_length T (length_v2 T).
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  unfold specification_of_length.
+  
+  split.
+    unfold length_v2.
+    rewrite -> (unfold_length_acc_base_case T 0).
+    reflexivity.
+  
+    unfold length_v2.
+    intros x xs'.
+    rewrite -> (unfold_length_acc_induction_case T x xs' 0).
+    rewrite -> (plus_1_S (length_acc T xs' 0)).
+    rewrite -> (plus_comm 1 (length_acc T xs' 0)).
+    rewrite <- (about_length_acc T xs' 1).
+    reflexivity.
+Qed.    
 
 (* ********** *)
 
@@ -267,8 +341,29 @@ Theorem there_is_only_one_append :
     forall xs ys : list T,
       append_1 xs ys = append_2 xs ys.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intros append1 append2.
+  intro S_append1.
+  intro S_append2.
+  unfold specification_of_append in S_append1.
+  unfold specification_of_append in S_append2.
+  destruct S_append1 as [H_append_bc1 H_append_ic1].
+  destruct S_append2 as [H_append_bc2 H_append_ic2].
+  intros xs ys.
+  induction xs as [ | x xs' IHx'].
+  
+  (* Base case: *)
+
+  rewrite -> (H_append_bc1 ys).
+  rewrite -> (H_append_bc2 ys).
+  reflexivity.
+
+  (* Inductive case: *)
+  rewrite -> (H_append_ic1 x xs' ys).
+  rewrite -> (H_append_ic2 x xs' ys).
+  rewrite (IHx').
+  reflexivity.
+Qed.
 
 Fixpoint append_ds (T : Type) (xs ys : list T) : list T :=
   match xs with
@@ -280,6 +375,11 @@ Definition append_v1 (T : Type) (xs ys : list T) : list T :=
   append_ds T xs ys.
 
 Compute unit_tests_for_append_nat (append_v1 nat).
+
+(*
+  = true
+  : bool
+*)
 
 Lemma unfold_append_v1_base_case :
   forall (T : Type) (ys : list T),
@@ -306,7 +406,7 @@ Proposition append_v1_fits_the_specification_of_append :
     specification_of_append T (append_v1 T).
 Proof.
 Abort.
-(* Replace "Abort." with a proof. *)
+
 
 (* ********** *)
 

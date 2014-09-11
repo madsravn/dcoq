@@ -368,13 +368,21 @@ Proof.
   intro sum.
   intro S_sum.
   intro f.
-  intros c. 
-  induction c as [ | c' IHc'].
-  unfold specification_of_sum in S_sum.
-  destruct (S_sum (fun x : nat => 0 * f x)) as [H_sum_bc H_sum_ic].
-  clear S_sum.
-  rewrite -> (H_sum_bc).
+  intros c k. 
+  induction k as [ | k' IHk'].
 
+  (* Base case: *)
+    unfold specification_of_sum in S_sum.
+    destruct (S_sum (fun x : nat => c * f x)) as [H_sum_bc H_sum_ic].
+
+    rewrite -> (H_sum_bc).
+    destruct (S_sum (fun x : nat => f x)) as [H_sum_bc2 H_sum_ic2]. 
+    rewrite -> (H_sum_bc2).
+    reflexivity.
+
+  (* Inductive case: *)
+    
+Admitted.
   
 Lemma factor_sum_on_the_right :
   forall sum : (nat -> nat) -> nat -> nat,

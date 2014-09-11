@@ -44,8 +44,25 @@ Proof.
     rewrite -> (plus_0_r 1).
     reflexivity.
     
-    rewrite -> (unfold_plus_ic).
+    rewrite -> (unfold_plus_ic 0 (S n')).
     rewrite -> (plus_0_l (S n')).
+    reflexivity.
+Qed.
+
+Proposition plus_S_1 :
+  forall n : nat,
+    S n = plus n 1.
+Proof.
+  intro.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+    rewrite -> (plus_0_l 1).
+    reflexivity.
+
+  (* Inductive case: *)
+    rewrite -> (unfold_plus_ic n' 1).
+    rewrite -> (IHn').
     reflexivity.
 Qed.
 
@@ -405,7 +422,20 @@ Proposition append_v1_fits_the_specification_of_append :
   forall T : Type,
     specification_of_append T (append_v1 T).
 Proof.
-Abort.
+  intro T.
+  unfold specification_of_append.
+  split.
+    intro ys.
+    unfold append_v1.
+    rewrite -> (unfold_append_v1_base_case T ys).
+    (* eller apply (unfold_append_v1_base_case T ys). *)
+    reflexivity.
+
+    intros x xs ys.
+    unfold append_v1.
+    rewrite -> (unfold_append_v1_induction_case T x xs ys).
+    reflexivity.
+Qed.
 
 
 (* ********** *)
@@ -420,6 +450,23 @@ Abort.
 *)
 
 (* Exercise: write a unit test that validates these properties. *)
+
+Definition unit_tests_for_append_nat_v1 (append : list nat -> list nat -> list nat) :=
+  (equal_list_nat (append nil
+                          (1 :: 2 :: nil))
+                  (1 :: 2 :: nil))
+  &&
+  (equal_list_nat (append (1 :: nil)
+                          nil)
+                  (1 :: nil))
+  &&
+  (equal_list_nat (append (append (nil) (1 :: nil)) (2 :: nil))
+                  (append (nil) (append (1 :: nil) (2 :: nil))))
+  &&
+  ((length (append (1 :: 2 :: nil) (3 :: 4 :: 5 :: nil))) ===
+                  ((length (1 :: 2 :: nil)) + (length (3 :: 4 :: 5 :: nil))))
+  .
+
 
 Lemma nil_is_neutral_for_append_on_the_left :
   forall (T : Type)
@@ -558,8 +605,31 @@ Theorem there_is_only_one_reverse :
       forall xs : list T,
         reverse_1 xs = reverse_2 xs.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intro append.
+  intro S_append.
+  intros rev1 rev2.
+  intro S_rev1.
+  intro S_rev2.
+  intro xs.
+  unfold specification_of_reverse in S_rev1.
+  unfold specification_of_reverse in S_rev2.
+  destruct (S_rev1 append S_append) as [H_rev_bc1 H_rev_ic1].
+  destruct (S_rev2 append S_append) as [H_rev_bc2 H_rev_ic2].
+  clear S_rev1.
+  clear S_rev2.
+  induction xs as [ | x' xs' IHxs'].
+  rewrite -> (H_rev_bc1).
+  rewrite -> (H_rev_bc2).
+  reflexivity.
+
+  unfold specification_of_append in S_append.
+  destruct S_append as [H_app_bc H_app_ic].
+  rewrite -> (H_rev_ic1 x' xs').
+  rewrite -> (H_rev_ic2 x' xs').
+  rewrite -> (IHxs').
+  reflexivity.
+Qed.
 
 (* ***** *)
 
@@ -586,6 +656,14 @@ Proof.
   unfold_tactic reverse_ds.
 Qed.
 
+Lemma unfold_reverse_v1_base_case :
+  forall (T : Type),
+    reverse_v1 T nil = nil.
+Proof.
+  unfold reverse_v1.
+  apply (unfold_reverse_ds_base_case).
+Qed.
+
 Lemma unfold_reverse_ds_induction_case :
   forall (T : Type)
          (x : T)
@@ -599,12 +677,47 @@ Proof.
   unfold_tactic reverse_ds.
 Qed.
 
+Lemma unfold_reverse_v1_induction_case :
+  forall (T : Type)
+         (x : T)
+         (xs' : list T),
+    reverse_v1 T (x :: xs') = 
+    append_v1 T (reverse_v1 T xs') (x :: nil).
+Proof.
+  unfold reverse_v1.
+  apply (unfold_reverse_ds_induction_case).
+Qed.
+
+
 Proposition reverse_v1_fits_the_specification_of_reverse :
   forall T : Type,
     specification_of_reverse T (reverse_v1 T).
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  unfold specification_of_reverse.
+  intro append.
+  intro S_append.
+  split.
+
+    rewrite -> (unfold_reverse_v1_base_case T).
+    reflexivity.
+
+
+    intros x xs.
+    Check(there_is_only_one_append).
+
+    rewrite -> (there_is_only_one_append 
+                  T append
+                  (append_v1 T)
+                  S_append
+                  (append_v1_fits_the_specification_of_append T)
+                  (reverse_v1 T xs) (x :: nil)).
+
+    Check(unfold_reverse_v1_induction_case).                                         
+    rewrite -> (unfold_reverse_v1_induction_case T x xs).
+    reflexivity.
+Qed.
+
 
 (* ***** *)
 
@@ -623,6 +736,30 @@ Compute unit_tests_for_reverse_nat (reverse_v2 nat).
 
 (* A useful lemma (Eureka): *)
 
+Lemma unfold_reverse_acc_base_case :
+  forall (T : Type) (a : list T),
+    reverse_acc T nil a = a.
+(* left-hand side in the base case
+   =
+   the corresponding conditional branch *)
+Proof.
+  unfold_tactic reverse_acc.
+Qed.
+
+Lemma unfold_reverse_acc_induction_case :
+  forall (T : Type)
+         (x : T)
+         (a xs' : list T),
+    reverse_acc T (x :: xs') a =
+    reverse_acc T xs' (x :: a).
+(* left-hand side in the inductive case
+   =
+   the corresponding conditional branch *)
+Proof.
+  unfold_tactic reverse_acc.
+Qed.
+
+
 Lemma about_reverse_acc :
   forall (T : Type)
          (append : list T -> list T -> list T),
@@ -630,15 +767,60 @@ Lemma about_reverse_acc :
     forall xs a : list T,
       reverse_acc T xs a = append (reverse_acc T xs nil) a.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intro append.
+  intro S_append.
+  intros xs.
+  
+  induction xs as [ | x xs' IHxs'].
+
+  (* Base case: *)
+    unfold specification_of_append in S_append.
+    destruct S_append as [H_app_bc H_app_ic].
+    rewrite -> (unfold_reverse_acc_base_case T nil).
+    intro a.
+    rewrite -> (unfold_reverse_acc_base_case T a).
+    rewrite -> (H_app_bc a).
+    reflexivity.
+
+  (* Inductive case: *)
+    intro a.
+    assert(append_s := S_append).
+    unfold specification_of_append in S_append.
+    destruct S_append as [H_app_bc H_app_ic].
+    rewrite -> (unfold_reverse_acc_induction_case T x nil xs').
+    rewrite -> (unfold_reverse_acc_induction_case T x a xs').
+    rewrite -> (IHxs' (x :: a)).
+    rewrite -> (IHxs' (x :: nil)).
+    Check(append_is_associative).
+    rewrite -> (append_is_associative T append append_s (reverse_acc T xs' nil) (x :: nil) a). 
+    rewrite -> (H_app_ic x nil a).
+    rewrite -> (H_app_bc a).
+    reflexivity.
+Qed.
+
+
 
 Proposition reverse_v2_fits_the_specification_of_reverse :
   forall T : Type,
     specification_of_reverse T (reverse_v2 T).
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  unfold specification_of_reverse.
+  intro append.
+  intro S_append.
+  split.
+  
+    unfold reverse_v2.
+    rewrite -> (unfold_reverse_acc_base_case T nil).
+    reflexivity.
+
+    intros x xs'.
+    unfold reverse_v2.
+    Check(unfold_reverse_acc_induction_case).
+    rewrite -> (unfold_reverse_acc_induction_case T x nil xs').
+    apply (about_reverse_acc T append S_append xs' (x :: nil)).
+Qed.
 
 (* ********** *)
 
@@ -664,8 +846,45 @@ Proposition reverse_preserves_length :
     forall xs : list T,
       length xs = length (reverse xs).
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intro length.
+  intro append.
+  intro reverse.
+  intro S_length.
+  intro S_append.
+  intro S_reverse.
+  intro xs.
+
+  assert(length_s := S_length).
+  assert(append_s := S_append).
+  assert(reverse_s := S_reverse).
+  unfold specification_of_reverse in S_reverse.
+  destruct (S_reverse append S_append) as [H_rev_bc H_rev_ic].
+  unfold specification_of_length in S_length.
+  destruct S_length as [H_len_bc H_len_ic].
+  unfold specification_of_append in S_append.
+  destruct S_append as [H_app_bc H_app_ic].
+  clear S_reverse.
+  
+  induction xs as [ | x xs' IHxs'].
+
+  (* Base case. *)
+    rewrite -> (H_rev_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+    rewrite -> (H_rev_ic x xs').
+    Check(append_preserves_length).
+    rewrite -> (append_preserves_length T length append length_s append_s (reverse xs') (x :: nil)).
+    rewrite <- (IHxs').
+    rewrite -> (H_len_ic x nil).
+    rewrite -> (H_len_bc).
+    rewrite -> (H_len_ic x xs').
+    Check(plus_S_1).
+    rewrite -> (plus_S_1 (length xs')).
+    reflexivity.
+Qed.
+  
 
 Proposition reverse_preserves_append_sort_of :
   forall (T : Type)
@@ -676,8 +895,38 @@ Proposition reverse_preserves_append_sort_of :
     forall xs ys : list T,
       reverse (append xs ys) = append (reverse ys) (reverse xs).
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intro T.
+  intro append.
+  intro reverse.
+  intro S_append.
+  intro S_reverse.
+  intros xs ys.
+  assert(append_s := S_append).
+  unfold specification_of_reverse in S_reverse.
+  destruct (S_reverse append S_append) as [H_rev_bc H_rev_ic].
+  unfold specification_of_append in S_append.
+  destruct S_append as [H_app_bc H_app_ic].
+  clear S_reverse.
+  induction xs as [ | x xs' IHxs'].
+
+  
+  (* Base case: *)
+    rewrite -> (H_app_bc ys).
+    rewrite -> (H_rev_bc).
+    Check(nil_is_neutral_for_append_on_the_right).
+
+    rewrite -> (nil_is_neutral_for_append_on_the_right T append append_s (reverse ys)).
+    reflexivity.
+
+  (* Inductive case: *)
+    rewrite -> (H_rev_ic x xs').
+    Check(append_is_associative).
+    rewrite <- (append_is_associative T  append append_s (reverse ys) (reverse xs') (x :: nil)).
+    rewrite <- (IHxs').
+    rewrite -> (H_app_ic x xs' ys).
+    rewrite -> (H_rev_ic x (append xs' ys)).
+    reflexivity.
+Qed.
 
 Proposition reverse_is_involutive :
   forall (T : Type)

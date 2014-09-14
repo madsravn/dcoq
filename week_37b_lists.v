@@ -484,8 +484,20 @@ Definition unit_tests_for_append_nat_v1 (append : list nat -> list nat -> list n
   &&
   ((length (append (1 :: 2 :: nil) (3 :: 4 :: 5 :: nil))) ===
                   ((length (1 :: 2 :: nil)) + (length (3 :: 4 :: 5 :: nil))))
+  &&
+  (equal_list_nat (append (append (1 :: 2 :: 3 :: nil) (4 :: 5 :: 6 :: nil)) (7 :: 8 :: 9 :: nil))
+                  (append (1 :: 2 :: 3 :: nil) (append (4 :: 5 :: 6 :: nil) (7 :: 8 :: 9 ::nil))))
+  &&
+  ((length (append (1 :: 2 :: 3 :: 4 :: nil) (5 :: 6 :: 7 :: nil)) ===
+           ((length (1 :: 2 :: 3 :: 4 :: nil)) + (length (5 :: 6 :: 7 :: nil)))))
   .
 
+(* Verifying the unit tests *)
+Compute unit_tests_for_append_nat_v1 (append_v1 nat).
+(*
+  = true
+  : bool
+*)
 
 Lemma nil_is_neutral_for_append_on_the_left :
   forall (T : Type)
@@ -854,6 +866,35 @@ Qed.
 
 (* Exercise: write a unit test that validates these properties. *)
 
+Definition unit_tests_for_app_rev_len_v1 (reverse : list nat -> list nat) (append : list nat -> list nat -> list nat) (length : list nat -> nat) :=
+  (length (1 :: 2 :: 3 :: nil) === length (reverse (1 :: 2 :: 3 :: nil)))
+  &&
+  (length (1 :: 2 :: 3 :: 4 :: nil) === length (reverse (1 :: 2 :: 3 :: 4 :: nil)))
+  &&
+  (equal_list_nat (reverse (append (1 :: 2 :: nil) (3 :: 4 :: nil))) 
+                  (append (reverse (3 :: 4 :: nil)) (reverse (1 :: 2 :: nil))))
+  &&
+  (equal_list_nat (reverse (append (1 :: 2 :: 3 :: nil) (4 :: 5 :: 6 :: nil)))
+                  (append (reverse (4 :: 5 :: 6 :: nil)) (reverse (1 :: 2 :: 3 :: nil))))
+  &&
+  (equal_list_nat (reverse (append (3 :: 4 :: 7 :: nil) (1 :: 2 :: 5 :: 6 :: nil)))
+                  (append (reverse (1 :: 2 :: 5 :: 6 :: nil)) (reverse (3 :: 4 :: 7 :: nil))))
+  &&
+  (equal_list_nat (reverse (append (nil) (1 :: nil)))
+                  (append (reverse (nil)) (reverse (1 :: nil))))
+  &&
+  (equal_list_nat (reverse (reverse (1 :: 2 :: 3 :: 4 :: 5 :: nil))) (1 :: 2 :: 3 :: 4 :: 5 :: nil))
+  &&
+  (equal_list_nat (reverse (reverse (1 :: 2 :: 3 :: 4 :: nil))) (1 :: 2 :: 3 :: 4 :: nil))
+  .
+
+
+Compute unit_tests_for_app_rev_len_v1 (reverse_v1 nat) (append_v1 nat) (length_v1 nat).
+(*
+  = true
+  : bool
+*)
+
 Proposition reverse_preserves_length :
   forall (T : Type)
          (length : list T -> nat)
@@ -1011,6 +1052,20 @@ Definition unit_tests_for_map_nat (map : (nat -> nat) -> list nat -> list nat) :
   (equal_list_nat (map (fun n => S n)
                        (1 :: 2 :: 3 :: nil))
                   (2 :: 3 :: 4 :: nil))
+  &&
+  (equal_list_nat (map (fun n => n*n)
+                       (1 :: 2 :: 3 :: nil))
+                  (1 :: 4 :: 9 :: nil))
+  &&
+  (equal_list_nat (map (fun n => n + n)
+                       (1 :: 2 :: 3 :: 4 :: nil))
+                  (map (fun n => 2*n)
+                       (1 :: 2 :: 3 :: 4 :: nil)))
+  &&
+  (equal_list_nat (map (fun n => n + 3)
+                       (1 :: 2 :: 3 :: 4 :: nil))
+                  (4 :: 5 :: 6 :: 7 :: nil))
+                  
   .
 
 (* Exercise: add more tests. *)
@@ -1070,6 +1125,11 @@ Definition map_v1 (T1 T2 : Type) (f : T1 -> T2) (xs : list T1) : list T2 :=
   map_ds T1 T2 f xs.
 
 Compute unit_tests_for_map_nat (map_v1 nat nat).
+(*
+  = true
+  : bool
+*)
+
 
 Lemma unfold_map_ds_base_case : 
   forall (T1 T2 : Type) (f : T1 -> T2),
@@ -1130,6 +1190,35 @@ Qed.
 *)
 
 (* Exercise: write a unit test that validates these properties. *)
+
+Definition unit_tests_for_map_nat_v2 (map : (nat -> nat) -> list nat -> list nat) (append : list nat -> list nat -> list nat) (reverse : list nat -> list nat)  :=
+  (equal_list_nat (map (fun n => n) (map (fun n => 2*n) (1 :: 2 :: 3 :: nil)))
+                  (map (fun n => 2*n) (map (fun n => n) (1 :: 2 :: 3 :: nil))))
+  &&
+  (equal_list_nat (map (fun n => n*n) (map (fun n => n) (1 :: 2 :: 3 :: 4 :: nil)))
+                  (map (fun n => n) (map (fun n => n*n) (1 :: 2 :: 3 :: 4 :: nil))))
+  &&
+  (equal_list_nat (map (fun n => 2*n) (map (fun n => 2*n) (1 :: 2 :: 3 :: 4 :: nil)))
+                  (4 :: 8 :: 12 :: 16 :: nil))
+  &&
+  (equal_list_nat (map (fun n => n) (append (1 :: 2 :: 3 :: nil) (4 :: 5 :: 6 ::nil)))
+                  (append (map (fun n => n) (1 :: 2 :: 3 :: nil)) (map (fun n => n) (4 :: 5 :: 6 :: nil))))
+  &&
+  (equal_list_nat (map (fun n => n) (append (1 :: 2 :: nil) (4 :: 5 :: nil)))
+                  (append (map (fun n => n) (1 :: 2 :: nil)) (map (fun n => n) (4 :: 5 :: nil))))
+  &&
+  (equal_list_nat (map (fun n => n) (reverse (1 :: 2 :: 3 :: nil)))
+                  (reverse (map (fun n => n) (1 :: 2 :: 3 :: nil))))
+  &&
+  (equal_list_nat (map (fun n => n*n) (reverse (1 :: 2 :: 3 :: 4 :: nil)))
+                  (reverse (map (fun n => n*n) (1 :: 2 :: 3 :: 4 :: nil))))
+  .
+
+Compute unit_tests_for_map_nat_v2 (map_v1 nat nat) (append_v1 nat) (reverse_v1 nat).
+(*
+  = true
+  : bool
+*)
 
 Proposition listlessness_of_map :
   forall (T1 T2 T3 : Type)

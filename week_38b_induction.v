@@ -33,8 +33,25 @@ Lemma nat_ind2 :
     forall n : nat,
       P n.
 Proof.
-Admitted.
-(* Replace "Admitted." with a proof. *)
+  intros P H_P0 H_P1 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x)).
+    intro x.
+    induction x as [ | x' [IHx' IHSx']].
+      split.
+        exact H_P0.
+      exact H_P1.
+
+      split.
+        exact IHSx'.
+      exact (H_PSS x' IHx' IHSx').
+
+      destruct (consecutive n) as [ly _].
+
+      exact ly.
+Qed.
+
 
 (* ********** *)
 
@@ -61,8 +78,19 @@ Proof.
   unfold specification_of_evenp.
   intros [Hf_0 [Hf_1 Hf_ij]] [Hg_0 [Hg_1 Hg_ij]] n.
   induction n as [ | | n' IH_n' IH_Sn'] using nat_ind2.  
-Abort.
-(* Replace "Abort." with a proof. *)
+  
+  rewrite -> (Hf_0).
+  rewrite -> (Hg_0).
+  reflexivity.
+
+  rewrite -> (Hf_1).
+  rewrite -> (Hg_1).
+  reflexivity.
+
+  rewrite -> (Hf_ij n').
+  rewrite -> (Hg_ij n').
+  exact (IH_n').
+Qed.
 
 (* ********** *)
 
@@ -89,9 +117,20 @@ Proof.
          [H_fib2_bc0 [H_fib2_bc1 H_fib2_ic]].
   intro n.
   induction n as [ | | n' IH_n' IH_Sn'] using nat_ind2.
-Abort.
-(* Replace "Abort." with a proof. *)
+  rewrite -> H_fib1_bc0.
+  rewrite -> H_fib2_bc0.
+  reflexivity.
 
+  rewrite -> H_fib1_bc1.
+  rewrite -> H_fib2_bc1.
+  reflexivity.
+
+  rewrite -> (H_fib1_ic n').
+  rewrite -> (H_fib2_ic n').
+  rewrite -> IH_n'.
+  rewrite -> IH_Sn'.
+  reflexivity.
+Qed.
 (* ********** *)
 
 (* Let us revisit nat_ind: *)
@@ -107,11 +146,20 @@ Proof.
   intros P H_bc H_ic n.
   induction n as [ | | n'' IH_n'' IH_Sn''] using nat_ind2.
 
+  exact H_bc.
+  exact (H_ic 0 H_bc).
+  apply (H_ic (S n'') IH_Sn'').
+
+
   Restart.
   (* Replace "Restart." with a proof. *)
 
   intros P H_bc H_ic n.
   induction n as [ | n' IHn'].
+
+  exact H_bc.
+
+
 Abort.
 (* Replace "Abort." with a proof. *)
 

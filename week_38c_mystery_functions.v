@@ -10,7 +10,7 @@
    Spend the rest of your dIFP weekly time
    to answer these questions
    for the specifications below.
-   (* At least 7 specifications would be nice.)
+   (* At least 7 specifications would be nice. *)
 *)
 
 (* ********** *)
@@ -31,15 +31,21 @@ Proof.
 Abort.
 (* Replace "Abort." with a proof. *)
 
-(*
+
 Theorem and_the_mystery_function_0_is_dot_dot_dot :
-  specification_of_the_mystery_function_0 ???.
+  specification_of_the_mystery_function_0 S.
 Proof.
   unfold specification_of_the_mystery_function_0.
   split.
-Abort.
-(* Replace "Abort." with a proof. *)
-*)
+  
+  reflexivity.
+
+  intros i j.
+  (* ring. *)
+  Abort.
+
+
+
 
 (* ********** *)
 

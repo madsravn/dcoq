@@ -41,6 +41,7 @@
 Require Import Arith Bool.
 
 Search (_ + _ = _ + _ -> _ = _).
+Search (S _ + _ = _).
 
 SearchAbout plus.
 
@@ -236,8 +237,40 @@ Lemma binomial_2 :
   forall x y : nat,
     square (x + y) = square x + 2 * x * y + square y.
 Proof.
-Abort.
-(* Replace "Abort." with a (standard) proof. *)
+  intros x y.
+  rewrite -> unfold_square.
+  Search((_ + _) * _ = _).
+  rewrite -> mult_plus_distr_r.
+  rewrite -> mult_plus_distr_l.
+  rewrite -> mult_plus_distr_l.
+  rewrite -> (mult_comm y x).
+  symmetry.
+  rewrite -> unfold_square.
+  rewrite -> unfold_square.
+  rewrite -> (unfold_mult_ic 1 x).
+  rewrite -> (unfold_mult_ic 0 x).
+  rewrite -> unfold_mult_bc.
+  rewrite -> plus_0_r.
+  rewrite -> mult_plus_distr_r.
+  rewrite -> plus_assoc.
+  rewrite -> plus_assoc.
+  reflexivity.
+
+  Restart.
+
+
+  intros x y.
+  rewrite ->3 unfold_square.
+  Restart. 
+  
+  intros x y.
+
+  rewrite -> unfold_square.
+  rewrite -> unfold_square.
+  rewrite -> unfold_square.
+  ring.
+Qed.
+
 
 (* ********** *)
 
@@ -469,10 +502,74 @@ Proposition there_is_only_one_evenp :
     forall n : nat,
       f n = g n.
 Proof.
-Abort.
-(* Replace "Abort." with a proof. *)
+  intros f g.
+  unfold specification_of_evenp.
+  intros [Hf_0 [Hf_1 Hf_SS]]
+         [Hg_0 [Hg_1 Hg_SS]].
+  intro n.
+  induction n as [ | n' IHn'].
 
-(* Properties: *)
+  rewrite -> Hf_0.
+  rewrite -> Hg_0.
+  reflexivity.
+
+
+  case n' as [ | n''] eqn:Hn'.
+  
+  rewrite -> Hf_1.
+  rewrite -> Hg_1.
+  reflexivity.
+
+  rewrite -> Hf_SS.
+  rewrite -> Hg_SS.
+  
+  case n'' as [ | n'''] eqn:Hn''.
+  rewrite -> Hf_0.
+  rewrite -> Hg_0.
+  reflexivity.
+
+  Restart.
+
+  intros f g.
+  unfold specification_of_evenp.
+  intros [Hf_0 [Hf_1 Hf_SS]]
+         [Hg_0 [Hg_1 Hg_SS]].
+  intro n.
+  
+  assert(consecutive :
+           forall x : nat,
+             f x = g x /\ f (S x) = g (S x)).
+
+
+  intro x.
+  induction x as [ | x' [IHx' IHSx']].
+
+  split.
+  
+    rewrite -> Hf_0.
+    rewrite -> Hg_0.
+    reflexivity.
+
+    rewrite -> Hf_1.
+    rewrite -> Hg_1.
+    reflexivity.
+    
+    split.
+
+    exact IHSx'.
+
+    rewrite -> Hf_SS.
+    rewrite -> Hg_SS.
+
+    exact IHx'.
+
+    destruct(consecutive n) as [H_magic _].
+    exact H_magic.
+Qed.    
+
+
+
+    (* Properties: *)
 
 Lemma about_evenp :
   forall evenp : nat -> bool,
@@ -522,7 +619,12 @@ Proof.
     reflexivity.
   reflexivity.
 
-  intros [ | y'].
+  (* Det samme som 
+  intro y.
+  destruct y as [ | y' ].
+  *)
+
+  intros [ | y' ].
 
   rewrite -> plus_0_r.
   rewrite -> H_0.
@@ -556,6 +658,7 @@ Proof.
   unfold negb.
   unfold eqb.
   reflexivity.
+
 Qed.
 
 (* An implementation: *)

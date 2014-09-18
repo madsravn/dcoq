@@ -129,18 +129,18 @@ Proof.
 
   unfold specification_of_the_mystery_function_0.
   split.
-  reflexivity.
+    reflexivity.
 
-  intros i j.
-  rewrite -> (plus_1_S).
-  rewrite -> (plus_S_1).
-  rewrite -> (plus_1_S).
-  rewrite -> (plus_assoc 1 i j).
-  Check(plus_1_S).
-  rewrite <- (plus_1_S i).
-  rewrite <- (plus_assoc (S i) j 1).
-  rewrite <- (plus_S_1 j).
-  reflexivity.
+    intros i j.
+    rewrite -> (plus_1_S).
+    rewrite -> (plus_S_1).
+    rewrite -> (plus_1_S).
+    rewrite -> (plus_assoc 1 i j).
+    Check(plus_1_S).
+    rewrite <- (plus_1_S i).
+    rewrite <- (plus_assoc (S i) j 1).
+    rewrite <- (plus_S_1 j).
+    reflexivity.
 Qed.
 
 
@@ -160,7 +160,7 @@ Proof.
   
     reflexivity.
 
-    (* SPØRG INSTRUKTØR *)
+
     intros i j.
     unfold id.
     reflexivity.
@@ -256,7 +256,7 @@ Qed.
 
 (* ********** *)
 
-(* This function cannot be calculated due to being a loop *)
+
 Definition specification_of_the_mystery_function_4 (f : nat -> nat) :=
   (f 0 = 0)
   /\
@@ -295,7 +295,6 @@ Lemma binomial_2 :
 Proof.
   intros x y.
   rewrite -> unfold_square.
-  Search((_ + _) * _ = _).
   rewrite -> mult_plus_distr_r.
   rewrite -> mult_plus_distr_l.
   rewrite -> mult_plus_distr_l.
@@ -390,16 +389,18 @@ Proof.
   intros x m.
   induction m as [ | m' IHm'].
   
-  rewrite -> (plus_0_l).
-  rewrite -> (unfold_exp_ic).
-  rewrite -> (unfold_exp_bc).
-  reflexivity.
+  (* Base case: *)
+  
+    rewrite -> (plus_0_l).
+    rewrite -> (unfold_exp_ic).
+    rewrite -> (unfold_exp_bc).
+    reflexivity.
 
-
-  rewrite <- (unfold_exp_ic).
-  rewrite -> (plus_1_S).
-  rewrite <- (plus_S_1 (1 + m')).
-  reflexivity.
+  (* Inductive case: *)
+    rewrite <- (unfold_exp_ic).
+    rewrite -> (plus_1_S).
+    rewrite <- (plus_S_1 (1 + m')).
+    reflexivity.
 Qed.
 
 Lemma exp_is_distributive :
@@ -409,37 +410,46 @@ Proof.
   intros x n m.
   induction n as [ | n' IHn'].
   
-  rewrite -> (unfold_exp_bc).
-  rewrite -> (plus_0_l m).
-  rewrite -> (mult_1_l).
-  reflexivity.
+  (* Base case: *)
+  
+    rewrite -> (unfold_exp_bc).
+    rewrite -> (plus_0_l m).
+    rewrite -> (mult_1_l).
+    reflexivity.
 
-  rewrite -> (unfold_exp_ic).
-  rewrite -> (plus_comm (S n') m).
-  rewrite -> (plus_S_1 n').
-  rewrite -> (plus_assoc m n' 1).
-  rewrite -> (about_exp x (m + n')).
-  rewrite <- (mult_assoc x (exp x n') (exp x m)).
-  rewrite -> (IHn').
-  rewrite -> (plus_comm n' m).
-  reflexivity.
+  (* Base case: *)
+
+    rewrite -> (unfold_exp_ic).
+    rewrite -> (plus_comm (S n') m).
+    rewrite -> (plus_S_1 n').
+    rewrite -> (plus_assoc m n' 1).
+    rewrite -> (about_exp x (m + n')).
+    rewrite <- (mult_assoc x (exp x n') (exp x m)).
+    rewrite -> (IHn').
+    rewrite -> (plus_comm n' m).
+    reflexivity.
 
   Restart.
   intros x n m.
   induction n as [ | n' IHn'].
-  rewrite -> (unfold_exp_bc).
-  rewrite -> (plus_0_l m).
-  rewrite -> (mult_1_l).
-  reflexivity.
+  
+  (*Base case: *)
 
-  rewrite -> (unfold_exp_ic).
-  rewrite -> (plus_1_S).
-  rewrite <- (plus_assoc 1 n' m).
-  rewrite <- (plus_1_S (n' +m)).
-  rewrite -> (unfold_exp_ic).
-  rewrite <- (IHn').
-  rewrite -> (mult_assoc x (exp x n') (exp x m)).
-  reflexivity.
+    rewrite -> (unfold_exp_bc).
+    rewrite -> (plus_0_l m).
+    rewrite -> (mult_1_l).
+    reflexivity.
+
+  (* Inductive case: *)
+
+    rewrite -> (unfold_exp_ic).
+    rewrite -> (plus_1_S).
+    rewrite <- (plus_assoc 1 n' m).
+    rewrite <- (plus_1_S (n' +m)).
+    rewrite -> (unfold_exp_ic).
+    rewrite <- (IHn').
+    rewrite -> (mult_assoc x (exp x n') (exp x m)).
+    reflexivity.
 Qed.
 
 
@@ -473,15 +483,19 @@ Lemma x_is_exp_x_1 :
 Proof.
   intro x.
   induction x as [ | x' IHx'].
+  
+  (* Base case: *)
 
-  rewrite -> (unfold_exp_ic).
-  rewrite -> (mult_0_l (exp 0 0)).
-  reflexivity.
+    rewrite -> (unfold_exp_ic).
+    rewrite -> (mult_0_l (exp 0 0)).
+    reflexivity.
 
-  rewrite -> (unfold_exp_ic).
-  rewrite -> (unfold_exp_bc).
-  rewrite -> (mult_1_r).
-  reflexivity.
+  (* Inductive case: *)
+
+    rewrite -> (unfold_exp_ic).
+    rewrite -> (unfold_exp_bc).
+    rewrite -> (mult_1_r).
+    reflexivity.
 Qed.
 
 Theorem and_the_mystery_function_8_is_mult_2_power_of_2 :

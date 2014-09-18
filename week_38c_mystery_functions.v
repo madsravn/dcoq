@@ -143,6 +143,12 @@ Proof.
     reflexivity.
 Qed.
 
+Theorem and_the_mystery_function_0_is_plus : 
+    specification_of_the_mystery_function_0 S ->
+    forall x y : nat, S ( S (x + y)) = S x + S y.
+Proof.  
+  
+
 
 (* ********** *)
 
@@ -672,23 +678,15 @@ Proof.
   unfold_tactic evenp.
 Qed.
 
-Definition specification_of_evenp (evenp : nat -> bool) :=
-  (evenp 0 = true) 
-    /\
-    (evenp 1 = false)
-      /\
-      (forall n'' : nat,
-         evenp (S (S n'')) = evenp n'').
 
-
-Lemma about_evenp :
-  forall evenp : nat -> bool,
-    specification_of_evenp evenp ->
+Lemma about_mystery_evenp :
+  forall even : nat -> bool,
+    specification_of_the_mystery_function_power_10 evenp ->
     forall x : nat,
       evenp (S x) = negb (evenp x).
 Proof.
-  intros evenp.
-  unfold specification_of_evenp.
+  intros even.
+  unfold specification_of_the_mystery_function_power_10.
   intros [H_0 [H_1 H_SS]].
   intro x.
   induction x as [ | x' IHx'].
@@ -697,9 +695,10 @@ Proof.
   rewrite -> H_0.
   unfold negb.
   reflexivity.
+  Check(unfold_evenp_ic).
+  rewrite -> (unfold_evenp_ic).
+  rewrite -> (IHx').
 
-  rewrite -> H_SS.
-  rewrite -> IHx'.
   destruct (evenp x') eqn:H_evenp_x'.
 
     unfold negb.
@@ -709,17 +708,17 @@ Proof.
   reflexivity.
 Qed.
 
-Lemma about_evenp_of_a_sum :
+Lemma about_evenp_mystery_of_a_sum :
   forall evenp : nat -> bool,
-    specification_of_evenp evenp ->
+    specification_of_the_mystery_function_power_10 evenp ->
     forall x y : nat,
       evenp (x + y) = eqb (evenp x) (evenp y).
 Proof.
-  intros evenp.
-  intro S_evenp.
-  assert(evenp_s := S_evenp).
-  unfold specification_of_evenp in S_evenp.
-  destruct S_evenp as [H_0 [H_1 H_SS]].
+  intros even.
+  intro S_mys.
+  assert(mys_s := S_mys).
+  unfold specification_of_the_mystery_function_power_10 in S_mys.
+  destruct S_mys as [H_0 [H_1 H_SS]].
   intro x.
   induction x as [ | x' IHx'].
 
@@ -727,79 +726,62 @@ Proof.
   rewrite -> plus_0_l.
   rewrite -> H_0.
   unfold eqb.
-  destruct (evenp y) eqn:H_y.
+  destruct (even y) eqn:H_y.
     reflexivity.
   reflexivity.
-
-  (* Det samme som 
-  intro y.
-  destruct y as [ | y' ].
-  *)
 
   intros [ | y' ].
 
   rewrite -> plus_0_r.
   rewrite -> H_0.
-  destruct (evenp (S x')) eqn:H_evenp_Sx'.
+  destruct (even (S x')) eqn:H_even_Sx'.
   unfold eqb.
   reflexivity.
 
   unfold eqb.
   reflexivity.
-
-  rewrite -> unfold_plus_ic.
-  rewrite -> plus_comm.
-  rewrite -> unfold_plus_ic.
-  rewrite -> plus_comm.
   rewrite -> H_SS.
-  rewrite -> IHx'.
-  rewrite -> about_evenp.
-  rewrite -> about_evenp.
-  destruct (evenp x') eqn:H_evenp_x'.
-    destruct (evenp y') eqn:H_evenp_y'.
-      unfold negb.
-      unfold eqb.
-      reflexivity.
-    unfold negb.
-    unfold eqb.
-    reflexivity.
-  destruct (evenp y') eqn:H_evenp_y'.
-    unfold negb.
-    unfold eqb.
-    reflexivity.
-  unfold negb.
-  unfold eqb.
-  reflexivity.
-  apply (evenp_s).
-  apply (evenp_s).
-Qed.
 
-  
+  reflexivity.
+
+Qed.
 
 Theorem and_the_mystery_function_10_is_is_even :
-  specification_of_the_mystery_function_power_10 evenp.
+  forall even : nat -> bool,
+    specification_of_the_mystery_function_power_10 evenp ->
+    forall x y : nat,
+      evenp (x + y) = eqb (evenp x) (evenp y).
 Proof.
-  unfold specification_of_the_mystery_function_power_10.
-  split.
-  rewrite -> (unfold_evenp_bc0).
-  reflexivity.
-  
-    split.
+  intros even.
+  intro S_mys_10.
+  unfold specification_of_the_mystery_function_power_10 in S_mys_10.
+  destruct S_mys_10 as [H_bc0 [H_bc1 H_ic]].
+      intros i.
+      induction i as [ | i' IHi'].
+      intro j.
+      rewrite ->(plus_0_l).
+      rewrite -> (H_bc0).
+      unfold eqb.
+      destruct (evenp j) eqn:H_j.
+        reflexivity.
+      reflexivity.
+      
+      intros [ | j'].
+      
+      rewrite -> (plus_0_r).
+      rewrite -> (H_bc0).
+      destruct (evenp (S i')) eqn:H_even_Si'.
+      unfold eqb.
+      reflexivity.
+      
+      unfold eqb.
+      reflexivity.
+      
+      rewrite -> H_ic.
+      reflexivity.
+Qed.      
 
-    rewrite -> (unfold_evenp_bc1).
-    reflexivity.
 
-
-    intros i j.
-    apply (about_evenp_of_a_sum).
-    unfold specification_of_evenp.
-    split.
-    apply(unfold_evenp_bc0).
-    split.
-    apply(unfold_evenp_bc1).
-    
-    apply(unfold_evenp_ic).
-Qed.
 
 Definition specification_of_the_mystery_function_11 (f : nat -> nat * nat) :=
   (f 0 = (1, 0))
@@ -808,12 +790,49 @@ Definition specification_of_the_mystery_function_11 (f : nat -> nat * nat) :=
     f (S n') = let (x, y) := f n'
                in (x + y, x)).
 
-(*
+Fixpoint fib_co_acc (n : nat) : nat * nat :=
+  match n with
+    | O => (1, 0)
+    | S n' => let (x, y) := fib_co_acc n'
+              in (x + y, x)
+  end.
+
+Lemma unfold_fib_co_acc_base_case :
+  fib_co_acc 0 = (1, 0).
+Proof.
+  unfold_tactic fib_co_acc.
+Qed.
+
+Lemma unfold_fib_co_acc_induction_case :
+  forall n' : nat,
+    fib_co_acc (S n') = let (x, y) := fib_co_acc n'
+                        in (x + y, x).
+Proof.
+  unfold_tactic fib_co_acc.
+Qed.
+
+
 Theorem and_the_mystery_function_11_is_power_fibonacci_accumulator :
-*)
- 
+  specification_of_the_mystery_function_11 fib_co_acc.
+Proof.
+  unfold specification_of_the_mystery_function_11.
+  split.
+    rewrite -> (unfold_fib_co_acc_base_case).
+    reflexivity.
+
+    intro n'.
+    rewrite -> (unfold_fib_co_acc_induction_case).
+    reflexivity.
+Qed.
 
 (* ********** *)
+
+Fixpoint fac_co_acc (n : nat) : nat * nat :=
+  match n with
+    | 0 => (0, 1)
+    | S n' => let (x,y) := fac_co_acc n'
+              in (S x, y * S x)
+end.
 
 Definition specification_of_the_mystery_function_12 (f : nat -> nat * nat) :=
   (f 0 = (0, 1))
@@ -822,10 +841,33 @@ Definition specification_of_the_mystery_function_12 (f : nat -> nat * nat) :=
     f (S n') = let (x, y) := f n'
                in (S x, y * S x)).
 
-(*
-Theorem and_the_mystery_function_12_is_tuple_index_and_factorial :
-*)
 
-(* ********** *)
+Lemma unfold_fac_co_acc_base_case :
+  fac_co_acc 0 = (0, 1).
+Proof.
+  unfold_tactic fac_co_acc.
+Qed.
+
+Lemma unfold_fac_co_acc_induction_case :
+  forall n' : nat,
+    fac_co_acc (S n') = let (x, y) := fac_co_acc n'
+                        in (S x, y * S x).
+Proof.
+  unfold_tactic fac_co_acc.
+Qed.
+
+
+Theorem and_the_mystery_function_12_is_tuple_index_and_factorial :
+  specification_of_the_mystery_function_12 fac_co_acc.
+Proof.
+  unfold specification_of_the_mystery_function_12.
+  split.
+    rewrite -> (unfold_fac_co_acc_base_case).
+    reflexivity.
+
+    intro n'.
+    rewrite -> (unfold_fac_co_acc_induction_case).
+    reflexivity.
+Qed.
 
 (* end of week_38c_mystery_functions.v *)

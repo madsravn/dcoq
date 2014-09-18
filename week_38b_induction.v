@@ -158,10 +158,8 @@ Proof.
   induction n as [ | n' IHn'].
 
   exact H_bc.
-
-
-Abort.
-(* Replace "Abort." with a proof. *)
+  apply (H_ic n' IHn').
+Qed.
 
 (* ********** *)
 
@@ -176,6 +174,143 @@ Abort.
        (a) prove nat_ind1
        (b) prove nat_ind2
 *)
+
+
+(* nat_ind3 (a) prove it by induction *)
+Lemma nat_ind3 :
+  forall P : nat -> Prop,
+    P 0 ->
+    P 1 ->
+    P 2 ->
+    (forall i : nat,
+      P i -> P (S i) -> P (S (S i)) -> P ( S ( S ( S  i)))) -> 
+    forall n : nat,
+      P n.
+Proof.
+  intros P H_P0 H_P1 H_P2 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x) /\ P (S (S x))).
+    intro x.
+    induction x as [ | x' [IHx' [IHSx' IHSSx']]].
+      split.
+        exact H_P0.
+        split.
+          exact H_P1.
+        exact H_P2.
+      split.
+        exact IHSx'.
+        split.
+          exact IHSSx'.
+      exact (H_PSS x' IHx' IHSx' IHSSx').
+
+      destruct (consecutive n) as [ly _].
+
+      exact ly.
+
+  Restart.
+  intros P H_P0 H_P1 H_P2 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x) /\ P (S (S x))).
+  intro x.
+  induction x as [ | x' [IHx' [IHSx' IHSSx']]] using nat_ind1.
+    split.
+      exact H_P0.
+      split.
+        exact H_P1.
+        exact H_P2.
+    split.
+      exact IHSx'.
+      split.
+        exact IHSSx'.
+      exact (H_PSS x' IHx' IHSx' IHSSx').
+
+      destruct (consecutive n) as [ly _].
+
+      exact ly.
+
+
+  Restart.
+  intros P H_P0 H_P1 H_P2 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x) /\ P (S (S x))).
+  intro x.
+  induction x as [ | | x' IHx' IHSx'] using nat_ind2.
+  split.
+    exact H_P0.
+    split.
+      exact H_P1.
+    exact H_P2.
+    split.
+      exact H_P1.
+    split.
+      exact H_P2.
+      exact (H_PSS 0 H_P0 H_P1 H_P2).
+      destruct IHx' as [IHx1 [IHx2 IHx3]].
+      split.
+      exact (IHx3).
+      destruct IHSx' as [IHSx1 [IHSx2 IHSx3]].
+      split.
+        exact (IHSx3).
+      exact (H_PSS (S x') IHSx1 IHSx2 IHSx3).
+    
+    destruct (consecutive n) as [ly _].
+    
+    exact ly.
+Qed.
+
+Lemma nat_ind1_v2 :
+  forall P : nat -> Prop,
+    P 0 ->
+    (forall i : nat,
+      P i -> P (S i)) ->
+    forall n : nat,
+      P n.
+Proof.
+  intros P H_bc H_ic n.
+  induction n as [ |  |  | n'' IH_n'' IH_Sn''] using nat_ind3.
+  exact H_bc.
+  exact (H_ic 0 H_bc).
+  exact (H_ic 1 (H_ic 0 H_bc)).
+  exact (H_ic (S (S n'')) IHn).
+Qed.
+
+
+Lemma nat_ind2_v2 :
+  forall P : nat -> Prop,
+    P 0 ->
+    P 1 ->
+    (forall i : nat,
+      P i -> P (S i) -> P (S (S i))) ->
+    forall n : nat,
+      P n.
+Proof.
+  intros P H_P0 H_P1 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x)).
+    intro x.
+    induction x as [ | | | x' [IHx' IHSx']] using nat_ind3.
+    split.
+      exact (H_P0).
+    exact (H_P1).
+    split.
+      exact (H_P1).
+    exact (H_PSS 0 H_P0 H_P1).
+    split.
+      exact (H_PSS 0 H_P0 H_P1).
+    exact (H_PSS 1 H_P1 (H_PSS 0 H_P0 H_P1)).
+    destruct IHx as [IHxx' IHSxx'].
+    destruct IHx0 as [IHx0' IHSx0'].
+    split.
+    exact (IHSx0').
+    exact (H_PSS (S (S x')) IHSxx' IHSx0').
+    
+    destruct (consecutive n) as [ly _].
+    exact ly.
+Qed.
 
 (* ********** *)
 

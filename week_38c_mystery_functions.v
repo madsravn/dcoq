@@ -229,8 +229,28 @@ Proof.
     reflexivity.
 
     intros i j.
-    (* TODO! *)
-    ring.
+    rewrite -> (plus_S_1 (i + j)).
+    rewrite -> (mult_plus_distr_l).
+    rewrite -> (mult_plus_distr_l).
+    rewrite -> (plus_S_1 (3*i + 1)).
+    rewrite -> (plus_1_S (3*j + 1)).
+    rewrite <- (plus_assoc (3*i) 1 1).
+    rewrite <- (plus_1_S 1).
+    rewrite -> (mult_1_r 3).
+    rewrite <- (plus_assoc (3*i + 3*j) 3 1).
+    rewrite <- (plus_S_1 3).
+    rewrite -> (plus_comm (3*j) 1).
+    rewrite -> (plus_assoc 1 1 (3*j)).
+    rewrite <- (plus_S_1 1).
+    rewrite -> (plus_assoc (3*i + 2) 2 (3 * j)).
+    rewrite <- (plus_assoc (3*i) 2 2).
+    rewrite <- (plus_n_Sm 2 1).
+    rewrite <- (plus_n_Sm 2 0).
+    rewrite -> (plus_0_r 2).
+    rewrite <- (plus_assoc (3*i) 4 (3*j)).
+    rewrite -> (plus_comm 4 (3*j)).
+    rewrite -> (plus_assoc (3*i) (3*j) 4).
+    reflexivity.
 Qed.
 
 
@@ -525,12 +545,6 @@ Lemma unfold_fib_ds_induction_case :
     fib_ds (S (S n'')) = fib_ds (S n'') + fib_ds n''.
 Proof.
   unfold_tactic fib_ds.
-Qed.
-
-Lemma help_me_with_2 :
-  2 = S ( S (0)).
-Proof.
-  reflexivity.
 Qed.
 
 Theorem and_the_mystery_function_9_is_fib :

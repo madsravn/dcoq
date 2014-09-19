@@ -143,13 +143,6 @@ Proof.
     reflexivity.
 Qed.
 
-Theorem and_the_mystery_function_0_is_plus : 
-    specification_of_the_mystery_function_0 S ->
-    forall x y : nat, S ( S (x + y)) = S x + S y.
-Proof.  
-  
-
-
 (* ********** *)
 
 Definition specification_of_the_mystery_function_1 (f : nat -> nat) :=
@@ -157,6 +150,36 @@ Definition specification_of_the_mystery_function_1 (f : nat -> nat) :=
   /\
   (forall i j : nat,
     f (i + S j) = f i + S (f j)).
+
+Proposition there_is_only_one_mystery_function_1 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_1 f ->
+    specification_of_the_mystery_function_1 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_1.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+    rewrite <- (plus_0_l (S n')).
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    rewrite (IHn').
+    reflexivity.
+Qed.
+
 
 Theorem and_the_mystery_function_1_is_id :
   specification_of_the_mystery_function_1 id.
@@ -179,6 +202,39 @@ Definition specification_of_the_mystery_function_2 (f : nat -> nat) :=
   /\
   (forall i j : nat,
     f (S (i + j)) = S (f i) + S (f j)).
+
+Proposition there_is_only_one_mystery_function_2 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_2 f ->
+    specification_of_the_mystery_function_2 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_2.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+    Check(plus_n_Sm).
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    rewrite -> (IHn').
+    reflexivity.
+Qed.
+
 
 
 Theorem and_the_mystery_function_2_is_mult_2 :
@@ -210,7 +266,7 @@ Proof.
     rewrite -> (mult_1_r 2).
     Check(plus_assoc).
     rewrite <- (plus_assoc (2*i) 1 1).
-    rewrite <- (BinInt.ZL0).
+    rewrite <- (plus_1_S 1).
     reflexivity.
 Qed.
 
@@ -223,6 +279,41 @@ Definition specification_of_the_mystery_function_3 (f : nat -> nat) :=
   /\
   (forall i j : nat,
     f (S (i + j)) = S (f i) + S (f j)).
+
+
+Proposition there_is_only_one_mystery_function_3 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_3 f ->
+    specification_of_the_mystery_function_3 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_3.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+    
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+    
+  
+  (* Inductive case: *)
+
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    rewrite -> (IHn').
+    reflexivity.
+Qed.
+
 
 Theorem and_the_mystery_function_3_is_mult_3_plus_1 :
   specification_of_the_mystery_function_3 (fun x => (3*x +1)).
@@ -269,6 +360,34 @@ Definition specification_of_the_mystery_function_4 (f : nat -> nat) :=
   (forall i j : nat,
     f (i + j) = f i + f j).
 
+Proposition there_is_only_one_mystery_function_4 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_4 f ->
+    specification_of_the_mystery_function_4 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_4.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+    
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+    
+  
+  (* Inductive case: *)
+
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+Abort. (* Can't be proven since we don't have a decreasing argument for our inductive case *)
+
+    
 Theorem and_the_mystery_function_4_is_mult_id :
   specification_of_the_mystery_function_4 id.
 Proof.
@@ -324,6 +443,35 @@ Definition specification_of_the_mystery_function_5 (f : nat -> nat) :=
   (forall i : nat,
     f (S i) = S (2 * i + f i)).
 
+
+Proposition there_is_only_one_mystery_function_5 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_5 f ->
+    specification_of_the_mystery_function_5 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_5.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+   
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite (IHn').
+    reflexivity.
+Qed.
+
 Theorem and_the_mystery_function_5_is_power :
   specification_of_the_mystery_function_5 (fun x => x * x).
 Proof.
@@ -349,6 +497,28 @@ Qed.
 Definition specification_of_the_mystery_function_6 (f : nat -> nat) :=
   (forall i j : nat,
     f (i + j) = f i + 2 * i * j + f j).
+
+
+Proposition there_is_only_one_mystery_function_6 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_6 f ->
+    specification_of_the_mystery_function_6 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_6.
+  intros H_f H_g.
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+   
+    rewrite <- (plus_0_l 0).
+    rewrite -> (H_f).
+    rewrite -> (H_g).
+Abort. (* Again, no decreasing argument *)    
+
 
 Theorem and_the_mystery_function_6_is_power :
   specification_of_the_mystery_function_6 (fun x => x*x).
@@ -386,6 +556,40 @@ Definition specification_of_the_mystery_function_7 (f : nat -> nat) :=
   /\
   (forall i j : nat,
     f (S (i + j)) = 2 * f i * f j).
+
+Proposition there_is_only_one_mystery_function_7 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_7 f ->
+    specification_of_the_mystery_function_7 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_7.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+   
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (IHn').
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+Qed.
+
+
 
 (* ESSENTIALLY WORTHLESS *)
 Lemma about_exp :
@@ -483,6 +687,40 @@ Definition specification_of_the_mystery_function_power_8 (f : nat -> nat) :=
   (forall i j : nat,
     f (S (i + j)) = f i * f j).
 
+
+Proposition there_is_only_one_mystery_function_power_8 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_power_8 f ->
+    specification_of_the_mystery_function_power_8 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_power_8.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+   
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+
+  (* Inductive case: *)
+    
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    rewrite -> (IHn').
+    reflexivity.
+Qed.
+
+
 Lemma x_is_exp_x_1 :
   forall x : nat,
     x = exp x 1.
@@ -538,6 +776,39 @@ Definition specification_of_the_mystery_function_9 (f : nat -> nat) :=
   /\
   (forall p q : nat,
     f (S (p + q)) = f (S p) * f (S q) + f p * f q).
+
+Proposition there_is_only_one_mystery_function_9 :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_9 f ->
+    specification_of_the_mystery_function_9 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_9.
+  intros [H_f_bc0 [H_f_bc1 [H_f_bc2 H_f_ic]]].
+  intros [H_g_bc0 [H_g_bc1 [H_g_bc2 H_g_ic]]].
+  intro n.
+  induction n as [ | n' IHn'].
+
+  (* Base case: *)
+    rewrite -> (H_f_bc0).
+    rewrite -> (H_g_bc0).
+    reflexivity.
+    
+  (* Inductive case: *)
+    rewrite <- (plus_0_l (S n')).
+    rewrite <- (plus_n_Sm 0 n').
+    rewrite -> (H_g_ic).
+    rewrite -> (H_f_ic).
+    rewrite -> (H_f_bc0).
+    rewrite -> (H_g_bc0).
+    rewrite -> (H_f_bc1).
+    rewrite -> (H_g_bc1).
+    rewrite ->2 (mult_0_l).
+    rewrite ->2 (mult_1_l).
+    rewrite ->2 (plus_0_r).
+Abort. (* Back where we started *)
 
 Fixpoint fib_ds (n : nat) : nat :=
   match n with
@@ -650,6 +921,36 @@ Definition specification_of_the_mystery_function_power_10 (f : nat -> bool) :=
   /\
   (forall i j : nat,
      f (i + j) = eqb (f i) (f j)).
+
+Proposition there_is_only_one_mystery_function_power_10 :
+  forall f g : nat -> bool,
+    specification_of_the_mystery_function_power_10 f ->
+    specification_of_the_mystery_function_power_10 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_power_10.
+  intros [H_f_bc0 [H_f_bc1 H_f_ic]].
+  intros [H_g_bc0 [H_g_bc1 H_g_ic]].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case. *)
+    rewrite -> (H_f_bc0).
+    rewrite -> (H_g_bc0).
+    reflexivity.
+
+  (* Inductive case: *)
+    rewrite -> (plus_1_S n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_f_bc1).
+    rewrite -> (IHn').
+    rewrite -> (H_g_ic).
+    rewrite -> (H_g_bc1).
+    reflexivity.
+Qed.
+
 
 Fixpoint evenp (n : nat) : bool :=
   match n with

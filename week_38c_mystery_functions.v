@@ -88,6 +88,36 @@ Proof.
   unfold_tactic mult.
 Qed.
 
+Lemma nat_ind2 :
+  forall P : nat -> Prop,
+    P 0 ->
+    P 1 ->
+    (forall i : nat,
+      P i -> P (S i) -> P (S (S i))) ->
+    forall n : nat,
+      P n.
+Proof.
+  intros P H_P0 H_P1 H_PSS n.
+  assert(consecutive :
+           forall x : nat,
+             P x /\ P (S x)).
+    intro x.
+    induction x as [ | x' [IHx' IHSx']].
+      split.
+        exact H_P0.
+      exact H_P1.
+
+      split.
+        exact IHSx'.
+      exact (H_PSS x' IHx' IHSx').
+
+      destruct (consecutive n) as [ly _].
+
+      exact ly.
+Qed.
+
+
+
 
 Definition specification_of_the_mystery_function_0 (f : nat -> nat) :=
   (f 0 = 1)
@@ -383,11 +413,39 @@ Proof.
   
   (* Inductive case: *)
 
-    rewrite <- (plus_0_l (S n')).
-    rewrite <- (plus_n_Sm 0 n').
-Abort. (* Can't be proven since we don't have a decreasing argument for our inductive case *)
+    rewrite -> (plus_1_S n').
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (plus_1_S 0).
+Abort.
 
+
+Theorem possible_mystery_function_4_is_plus_0 : 
+  specification_of_the_mystery_function_4 (plus 0).
+Proof.
+  unfold specification_of_the_mystery_function_4.
+  split.
+    rewrite -> (plus_0_l).
+    reflexivity.
+
+    intros i j.
+    rewrite ->3 (plus_0_l).
+    reflexivity.
+Qed.
+
+Theorem another_possibility_for_mystery_function_4_is_mult_1 : 
+  specification_of_the_mystery_function_4 (mult 1).
+Proof.
+  unfold specification_of_the_mystery_function_4.
+  split.
+    rewrite -> (mult_0_r).
+    reflexivity.
     
+    intros i j.
+    rewrite ->3 (mult_1_l).
+    reflexivity.
+Qed.
+
 Theorem and_the_mystery_function_4_is_mult_id :
   specification_of_the_mystery_function_4 id.
 Proof.
@@ -402,31 +460,22 @@ Proof.
     reflexivity.
 Qed.
 
+
+
 (* ********** *)
-
-Definition square (x : nat) : nat :=
-  x * x.
-
-Lemma unfold_square :
-  forall x : nat,
-    square x = x * x.
-Proof.
-  unfold_tactic square.
-Qed.
 
 Lemma binomial_2 :
   forall x y : nat,
-    square (x + y) = square x + 2 * x * y + square y.
+    (x + y) * (x + y) = (x * x) + 2 * x * y + (y * y).
 Proof.
   intros x y.
-  rewrite -> unfold_square.
+
   rewrite -> mult_plus_distr_r.
   rewrite -> mult_plus_distr_l.
   rewrite -> mult_plus_distr_l.
   rewrite -> (mult_comm y x).
   symmetry.
-  rewrite -> unfold_square.
-  rewrite -> unfold_square.
+
   rewrite -> (unfold_mult_ic 1 x).
   rewrite -> (unfold_mult_ic 0 x).
   rewrite -> unfold_mult_bc.
@@ -488,7 +537,9 @@ Proof.
     rewrite <- (mult_assoc 2 i 1).
     rewrite -> (mult_comm i 1).
     rewrite -> (mult_assoc 2 1 i).
-    apply(binomial_2).
+    rewrite -> (binomial_2).
+    rewrite <- (mult_1_l 1) at 5.
+    reflexivity.
 Qed.
 
 
@@ -517,7 +568,8 @@ Proof.
     rewrite <- (plus_0_l 0).
     rewrite -> (H_f).
     rewrite -> (H_g).
-Abort. (* Again, no decreasing argument *)    
+Abort.
+
 
 
 Theorem and_the_mystery_function_6_is_power :
@@ -528,6 +580,39 @@ Proof.
   apply (binomial_2).
 Qed.
 
+Lemma rewriting_in_short_form_v1 : 
+  forall a b c d : nat,
+    a + b + c + d = a + d + b + c.
+Proof.                    
+  intros a b c d.
+  rewrite <- (plus_assoc a d b).
+  rewrite -> (plus_comm d b).
+  rewrite <- (plus_assoc a (b + d) c).
+  rewrite -> (plus_comm b d).
+  rewrite <- (plus_assoc d b c).
+  rewrite -> (plus_comm d (b + c)).
+  rewrite -> (plus_assoc a (b + c) d).
+  rewrite -> (plus_assoc a b c).
+  reflexivity.
+Qed.
+
+
+Theorem and_the_mystery_function_6_could_also_be : 
+  specification_of_the_mystery_function_6 (fun x => x*x + 2*x).
+Proof.
+  unfold specification_of_the_mystery_function_6.
+  intros i j.
+  rewrite -> (binomial_2).
+  rewrite -> (mult_plus_distr_l).
+  rewrite -> (plus_comm (2*i) (2*j)).
+  rewrite <- (plus_assoc (i*i) (2*i) (2*i*j)).
+  rewrite -> (plus_comm (2*i) (2*i*j)).
+  rewrite -> (plus_assoc (i*i) (2*i*j) (2*i)).
+  rewrite ->2 (plus_assoc).
+  rewrite -> (rewriting_in_short_form_v1 (i*i + 2*i*j) (j*j) (2*j) (2*i)).
+  reflexivity.
+Qed.  
+  
 (* ********** *)
 
 Fixpoint exp (x n : nat)  :=
@@ -591,55 +676,10 @@ Qed.
 
 
 
-(* ESSENTIALLY WORTHLESS *)
-Lemma about_exp :
-  forall (x m : nat),
-    exp x (m + 1) = x * (exp x m).
-Proof.
-  intros x m.
-  induction m as [ | m' IHm'].
-  
-  (* Base case: *)
-  
-    rewrite -> (plus_0_l).
-    rewrite -> (unfold_exp_ic).
-    rewrite -> (unfold_exp_bc).
-    reflexivity.
-
-  (* Inductive case: *)
-    rewrite <- (unfold_exp_ic).
-    rewrite -> (plus_1_S).
-    rewrite <- (plus_S_1 (1 + m')).
-    reflexivity.
-Qed.
-
 Lemma exp_is_distributive :
   forall (x n m : nat),
     mult (exp x n) (exp x m) = exp x (n+m).
 Proof.
-  intros x n m.
-  induction n as [ | n' IHn'].
-  
-  (* Base case: *)
-  
-    rewrite -> (unfold_exp_bc).
-    rewrite -> (plus_0_l m).
-    rewrite -> (mult_1_l).
-    reflexivity.
-
-  (* Base case: *)
-
-    rewrite -> (unfold_exp_ic).
-    rewrite -> (plus_comm (S n') m).
-    rewrite -> (plus_S_1 n').
-    rewrite -> (plus_assoc m n' 1).
-    rewrite -> (about_exp x (m + n')).
-    rewrite <- (mult_assoc x (exp x n') (exp x m)).
-    rewrite -> (IHn').
-    rewrite -> (plus_comm n' m).
-    reflexivity.
-
-  Restart.
   intros x n m.
   induction n as [ | n' IHn'].
   
@@ -721,27 +761,6 @@ Proof.
 Qed.
 
 
-Lemma x_is_exp_x_1 :
-  forall x : nat,
-    x = exp x 1.
-Proof.
-  intro x.
-  induction x as [ | x' IHx'].
-  
-  (* Base case: *)
-
-    rewrite -> (unfold_exp_ic).
-    rewrite -> (mult_0_l (exp 0 0)).
-    reflexivity.
-
-  (* Inductive case: *)
-
-    rewrite -> (unfold_exp_ic).
-    rewrite -> (unfold_exp_bc).
-    rewrite -> (mult_1_r).
-    reflexivity.
-Qed.
-
 Theorem and_the_mystery_function_8_is_mult_2_power_of_2 :
   specification_of_the_mystery_function_power_8 (fun x => mult 2 (exp 2 x)).
 Proof.
@@ -786,29 +805,30 @@ Proposition there_is_only_one_mystery_function_9 :
 Proof.
   intros f g.
   unfold specification_of_the_mystery_function_9.
-  intros [H_f_bc0 [H_f_bc1 [H_f_bc2 H_f_ic]]].
-  intros [H_g_bc0 [H_g_bc1 [H_g_bc2 H_g_ic]]].
+  intros [H_fib1_bc0 [H_fib1_bc1 [H_fib1_bc2 H_fib1_ic]]]
+         [H_fib2_bc0 [H_fib2_bc1 [H_fib2_bc2 H_fib2_ic]]].
   intro n.
-  induction n as [ | n' IHn'].
+  induction n as [ | | n' IH_n' IH_Sn'] using nat_ind2.
+  rewrite -> H_fib1_bc0.
+  rewrite -> H_fib2_bc0.
+  reflexivity.
 
-  (* Base case: *)
-    rewrite -> (H_f_bc0).
-    rewrite -> (H_g_bc0).
-    reflexivity.
-    
-  (* Inductive case: *)
-    rewrite <- (plus_0_l (S n')).
-    rewrite <- (plus_n_Sm 0 n').
-    rewrite -> (H_g_ic).
-    rewrite -> (H_f_ic).
-    rewrite -> (H_f_bc0).
-    rewrite -> (H_g_bc0).
-    rewrite -> (H_f_bc1).
-    rewrite -> (H_g_bc1).
-    rewrite ->2 (mult_0_l).
-    rewrite ->2 (mult_1_l).
-    rewrite ->2 (plus_0_r).
-Abort. (* Back where we started *)
+  rewrite -> H_fib1_bc1.
+  rewrite -> H_fib2_bc1.
+  reflexivity.
+  
+  rewrite -> (plus_1_S n').
+  rewrite -> (H_fib1_ic 1 n').
+  rewrite -> (H_fib2_ic 1 n').
+  rewrite -> IH_n'.
+  rewrite -> (H_fib1_bc2).
+  rewrite -> (H_fib2_bc2).
+  rewrite -> IH_Sn'.
+  rewrite -> (H_fib1_bc1).
+  rewrite -> (H_fib2_bc1).
+  reflexivity.
+Qed.
+
 
 Fixpoint fib_ds (n : nat) : nat :=
   match n with
@@ -831,12 +851,35 @@ Proof.
   unfold_tactic fib_ds.
 Qed.
 
+Lemma shorthand_rewrite_with_fib : 
+  forall a b c d : nat,
+    (a + b) * c + a* d = a*(c + d) + b*c.
+Proof.
+  intros a b c d .
+  rewrite -> (mult_plus_distr_r).
+  rewrite <- (plus_assoc (a*c) (b*c) (a*d)).
+  rewrite -> (plus_comm (b*c) (a*d)).
+  rewrite -> (plus_assoc (a*c) (a*d) (b*c)).
+  Check(mult_plus_distr_l).
+  rewrite <- (mult_plus_distr_l a c d).
+  reflexivity.
+Qed.
+
+
 Lemma unfold_fib_ds_induction_case :
   forall n'' : nat,
     fib_ds (S (S n'')) = fib_ds (S n'') + fib_ds n''.
 Proof.
   unfold_tactic fib_ds.
 Qed.
+
+Theorem and_a_not_so_fun_mystery_function_9 :
+  specification_of_the_mystery_function_9 (fun x => x).
+Proof.
+  unfold specification_of_the_mystery_function_9.
+  split.
+    reflexivity.
+    split.
 
 Theorem and_the_mystery_function_9_is_fib :
   specification_of_the_mystery_function_9 (fib_ds).
@@ -861,53 +904,30 @@ Proof.
         reflexivity.
 
         intros p q.
+        revert p. (* To strengthen my hypothesis *)
         induction q as [ | q' IHq'].
-        rewrite -> (plus_0_r).
-        rewrite -> (unfold_fib_ds_base_case_0).
-        rewrite -> (unfold_fib_ds_base_case_1).
-        rewrite -> (mult_0_r).
-        rewrite -> (mult_1_r).
-        rewrite -> (plus_0_r).
-        reflexivity.
         
-        rewrite -> (unfold_fib_ds_induction_case).
-        rewrite -> (plus_1_S).
-        Check(plus_1_S).
-        rewrite -> (plus_1_S q').
-        rewrite -> (plus_comm 1 q').
-        rewrite -> (plus_assoc p q' 1).
-        rewrite <- (plus_S_1 (p + q')).
-        rewrite <- (plus_1_S (S (p +q'))).
-        rewrite -> (unfold_fib_ds_induction_case).
+        (* Base case *)
+          intro p.
+          rewrite -> (plus_0_r).
+          rewrite -> (unfold_fib_ds_base_case_0).
+          rewrite -> (unfold_fib_ds_base_case_1).
+          rewrite -> (mult_0_r).
+          rewrite -> (mult_1_r).
+          rewrite -> (plus_0_r).
+          reflexivity.
+
+        (* Inductive case: *)
         
-        rewrite <- (plus_S_1 q').
-        Check(unfold_fib_ds_induction_case).
-        rewrite <- (unfold_fib_ds_induction_case q').
-(*        induction q as [ | q' IHq'].
-        
-        rewrite -> (plus_0_r).
-        rewrite -> (unfold_fib_ds_induction_case).
-        rewrite -> (unfold_fib_ds_base_case_0).
-        rewrite -> (unfold_fib_ds_base_case_1).
-        rewrite -> (mult_0_r).
-        rewrite -> (plus_0_r).
-        rewrite -> (mult_1_r).
-        reflexivity.
-        rewrite -> (unfold_fib_ds_induction_case p').
-        rewrite -> (unfold_fib_ds_induction_case q').
-        rewrite -> (plus_1_S p').
-        rewrite -> (plus_1_S q').
-        rewrite -> (plus_1_S (1 + p' + (1 + q'))).
-        rewrite -> (plus_comm 1 q').
-        rewrite -> (plus_assoc (1 +p') q' 1).
-        Check(plus_assoc).
-        rewrite <- (plus_assoc 1 p' q').
-        rewrite <- (plus_1_S (p'+ q')).
-        rewrite <- (plus_S_1 (S (p' + q'))).
-        rewrite <- (plus_1_S (S (S (p' + q')))).
-        rewrite -> (unfold_fib_ds_induction_case).
-*)
-Admitted.
+          intro p.
+          rewrite -> (plus_1_S q') at 1.
+          rewrite -> (plus_assoc p 1 q').
+          rewrite <- (plus_S_1 p).
+          rewrite -> (IHq' (S p)).
+          rewrite ->2 (unfold_fib_ds_induction_case).
+          rewrite -> (shorthand_rewrite_with_fib (fib_ds (S p)) (fib_ds p) (fib_ds (S q')) (fib_ds q')).
+          reflexivity.
+Qed.
 
 (* ********** *)
 
@@ -980,107 +1000,125 @@ Proof.
 Qed.
 
 
-Lemma about_mystery_evenp :
-  forall even : nat -> bool,
-    specification_of_the_mystery_function_power_10 evenp ->
+Lemma about_mystery_evenp_v2 :
     forall x : nat,
       evenp (S x) = negb (evenp x).
 Proof.
-  intros even.
-  unfold specification_of_the_mystery_function_power_10.
-  intros [H_0 [H_1 H_SS]].
   intro x.
   induction x as [ | x' IHx'].
 
-  rewrite -> H_1.
-  rewrite -> H_0.
+  rewrite -> (unfold_evenp_bc0).
+  rewrite -> (unfold_evenp_bc1).
   unfold negb.
   reflexivity.
-  Check(unfold_evenp_ic).
+  
   rewrite -> (unfold_evenp_ic).
   rewrite -> (IHx').
-
-  destruct (evenp x') eqn:H_evenp_x'.
-
-    unfold negb.
-    reflexivity.
-
-  unfold negb.
+  rewrite -> (negb_involutive).
   reflexivity.
 Qed.
 
-Lemma about_evenp_mystery_of_a_sum :
-  forall evenp : nat -> bool,
-    specification_of_the_mystery_function_power_10 evenp ->
-    forall x y : nat,
-      evenp (x + y) = eqb (evenp x) (evenp y).
+
+Lemma eqb_if_both_even_or_odd : 
+  forall x y : nat, 
+    eqb (evenp x) (evenp y) = eqb (evenp (S x)) (evenp (S y)).
 Proof.
-  intros even.
-  intro S_mys.
-  assert(mys_s := S_mys).
-  unfold specification_of_the_mystery_function_power_10 in S_mys.
-  destruct S_mys as [H_0 [H_1 H_SS]].
   intro x.
   induction x as [ | x' IHx'].
 
-  intro y.
-  rewrite -> plus_0_l.
-  rewrite -> H_0.
-  unfold eqb.
-  destruct (even y) eqn:H_y.
+  (* Base case: *)
+  
+    intros [ | y'].
+      rewrite -> (unfold_evenp_bc0).
+      rewrite -> (unfold_evenp_bc1).
+      unfold eqb.
+      reflexivity.
+
+    rewrite -> (unfold_evenp_bc1).
+    rewrite -> (unfold_evenp_bc0).
+    rewrite -> (unfold_evenp_ic).
+    rewrite -> (about_mystery_evenp_v2 y').
+    destruct (evenp y') eqn:H_y.
+      unfold negb.
+      unfold eqb.
+      reflexivity.
+
+    unfold negb.
+    unfold eqb.
     reflexivity.
-  reflexivity.
 
-  intros [ | y' ].
+  (* Inductive case: *)
 
-  rewrite -> plus_0_r.
-  rewrite -> H_0.
-  destruct (even (S x')) eqn:H_even_Sx'.
-  unfold eqb.
-  reflexivity.
+    rewrite -> (unfold_evenp_ic).
+    rewrite -> (about_mystery_evenp_v2).
+    intros [ | y'].
 
-  unfold eqb.
-  reflexivity.
-  rewrite -> H_SS.
-
-  reflexivity.
-
+      rewrite -> (unfold_evenp_bc0).
+      rewrite -> (IHx' 1).
+      rewrite -> (unfold_evenp_ic).
+      rewrite -> (unfold_evenp_bc0).
+      rewrite -> (about_mystery_evenp_v2).
+      reflexivity.
+    
+    rewrite <- (about_mystery_evenp_v2).
+    rewrite <- (IHx' y').
+    rewrite -> (unfold_evenp_ic).
+    reflexivity.
 Qed.
 
-Theorem and_the_mystery_function_10_is_is_even :
-  forall even : nat -> bool,
-    specification_of_the_mystery_function_power_10 evenp ->
-    forall x y : nat,
-      evenp (x + y) = eqb (evenp x) (evenp y).
+
+
+
+Theorem fun_theorem_about_evenp : 
+  forall x y : nat,
+    evenp (x + y) = eqb (evenp x) (evenp y).
 Proof.
-  intros even.
-  intro S_mys_10.
-  unfold specification_of_the_mystery_function_power_10 in S_mys_10.
-  destruct S_mys_10 as [H_bc0 [H_bc1 H_ic]].
-      intros i.
-      induction i as [ | i' IHi'].
-      intro j.
-      rewrite ->(plus_0_l).
-      rewrite -> (H_bc0).
-      unfold eqb.
-      destruct (evenp j) eqn:H_j.
-        reflexivity.
-      reflexivity.
-      
-      intros [ | j'].
-      
-      rewrite -> (plus_0_r).
-      rewrite -> (H_bc0).
-      destruct (evenp (S i')) eqn:H_even_Si'.
-      unfold eqb.
-      reflexivity.
-      
-      unfold eqb.
-      reflexivity.
-      
-      rewrite -> H_ic.
-      reflexivity.
-Qed.      
+  intro x.
+  induction x as [ | x' IHx'].
+  
+  (* Base case: *)
+  
+  intro y.
+  rewrite -> (plus_0_l).
+  rewrite -> (unfold_evenp_bc0).
+  unfold eqb.
+  destruct (evenp y) eqn:H_y.
+    reflexivity.
+  reflexivity.
+  
+  intros [ | y'].
+  rewrite -> (unfold_evenp_bc0).
+  rewrite -> (plus_0_r).
+  unfold eqb.
+  destruct (evenp (S x')) eqn:H_Sx'.
+    reflexivity.
+  reflexivity.
+  rewrite -> (plus_S_1 x').
+  rewrite <- (plus_assoc x' 1 (S y')).
+  rewrite <- (plus_1_S (S y')).
+  rewrite (IHx' (S (S y'))).
+  rewrite <- (plus_S_1 x').
+  rewrite -> (unfold_evenp_ic).
+  rewrite -> (eqb_if_both_even_or_odd).
+  reflexivity.
+Qed.
+
+
+
+Theorem and_the_mystery_function_10_is_is_evenp : 
+  specification_of_the_mystery_function_power_10 evenp.
+Proof.
+  unfold specification_of_the_mystery_function_power_10.
+  split.
+  rewrite -> (unfold_evenp_bc0).
+  reflexivity.
+  split.
+  rewrite -> (unfold_evenp_bc1).
+  reflexivity.
+  
+  apply (fun_theorem_about_evenp).
+Qed.
+
 
 
 
@@ -1113,6 +1151,32 @@ Proof.
 Qed.
 
 
+Proposition there_is_only_one_mystery_function_11 :
+  forall f g : nat -> nat * nat,
+    specification_of_the_mystery_function_11 f ->
+    specification_of_the_mystery_function_11 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_11.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+    
+  (* Inductive case: *)
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (IHn').
+    reflexivity.
+Qed.    
+
 Theorem and_the_mystery_function_11_is_power_fibonacci_accumulator :
   specification_of_the_mystery_function_11 fib_co_acc.
 Proof.
@@ -1141,6 +1205,33 @@ Definition specification_of_the_mystery_function_12 (f : nat -> nat * nat) :=
   (forall n' : nat,
     f (S n') = let (x, y) := f n'
                in (S x, y * S x)).
+
+Proposition there_is_only_one_mystery_function_12 :
+  forall f g : nat -> nat * nat,
+    specification_of_the_mystery_function_12 f ->
+    specification_of_the_mystery_function_12 g ->
+    forall n : nat,
+      f n = g n.
+Proof.
+  intros f g.
+  unfold specification_of_the_mystery_function_12.
+  intros [H_f_bc H_f_ic].
+  intros [H_g_bc H_g_ic].
+  intro n.
+  
+  induction n as [ | n' IHn'].
+  
+  (* Base case: *)
+    rewrite -> (H_f_bc).
+    rewrite -> (H_g_bc).
+    reflexivity.
+  
+  (* Inductive case: *)
+    rewrite -> (H_f_ic).
+    rewrite -> (H_g_ic).
+    rewrite -> (IHn').
+    reflexivity.
+Qed.
 
 
 Lemma unfold_fac_co_acc_base_case :

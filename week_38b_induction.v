@@ -176,7 +176,6 @@ Qed.
 *)
 
 
-(* nat_ind3 (a) prove it by induction *)
 Lemma nat_ind3 :
   forall P : nat -> Prop,
     P 0 ->
@@ -219,7 +218,7 @@ Proof.
       exact H_P0.
       split.
         exact H_P1.
-        exact H_P2.
+      exact H_P2.
     split.
       exact IHSx'.
       split.
@@ -246,11 +245,11 @@ Proof.
     split.
       exact H_P1.
     split.
-      exact H_P2.
+        exact H_P2.
       exact (H_PSS 0 H_P0 H_P1 H_P2).
       destruct IHx' as [IHx1 [IHx2 IHx3]].
       split.
-      exact (IHx3).
+        exact (IHx3).
       destruct IHSx' as [IHSx1 [IHSx2 IHSx3]].
       split.
         exact (IHSx3).
@@ -305,7 +304,7 @@ Proof.
     destruct IHx as [IHxx' IHSxx'].
     destruct IHx0 as [IHx0' IHSx0'].
     split.
-    exact (IHSx0').
+      exact (IHSx0').
     exact (H_PSS (S (S x')) IHSxx' IHSx0').
     
     destruct (consecutive n) as [ly _].

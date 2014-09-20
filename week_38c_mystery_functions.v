@@ -117,8 +117,6 @@ Proof.
 Qed.
 
 
-
-
 Definition specification_of_the_mystery_function_0 (f : nat -> nat) :=
   (f 0 = 1)
   /\
@@ -521,7 +519,7 @@ Proof.
     reflexivity.
 Qed.
 
-Theorem and_the_mystery_function_5_is_power :
+Theorem and_the_mystery_function_5_is_square :
   specification_of_the_mystery_function_5 (fun x => x * x).
 Proof.
   unfold specification_of_the_mystery_function_5.
@@ -805,28 +803,32 @@ Proposition there_is_only_one_mystery_function_9 :
 Proof.
   intros f g.
   unfold specification_of_the_mystery_function_9.
-  intros [H_fib1_bc0 [H_fib1_bc1 [H_fib1_bc2 H_fib1_ic]]]
-         [H_fib2_bc0 [H_fib2_bc1 [H_fib2_bc2 H_fib2_ic]]].
+  intros [H_f_bc0 [H_f_bc1 [H_f_bc2 H_f_ic]]]
+         [H_g_bc0 [H_g_bc1 [H_g_bc2 H_g_ic]]].
   intro n.
   induction n as [ | | n' IH_n' IH_Sn'] using nat_ind2.
-  rewrite -> H_fib1_bc0.
-  rewrite -> H_fib2_bc0.
-  reflexivity.
-
-  rewrite -> H_fib1_bc1.
-  rewrite -> H_fib2_bc1.
-  reflexivity.
   
-  rewrite -> (plus_1_S n').
-  rewrite -> (H_fib1_ic 1 n').
-  rewrite -> (H_fib2_ic 1 n').
-  rewrite -> IH_n'.
-  rewrite -> (H_fib1_bc2).
-  rewrite -> (H_fib2_bc2).
-  rewrite -> IH_Sn'.
-  rewrite -> (H_fib1_bc1).
-  rewrite -> (H_fib2_bc1).
-  reflexivity.
+  (* Base case 1: *)
+    rewrite -> H_f_bc0.
+    rewrite -> H_g_bc0.
+    reflexivity.
+
+  (* Base case 2: *)
+    rewrite -> H_f_bc1.
+    rewrite -> H_g_bc1.
+    reflexivity.
+  
+  (* Inductive case: *)
+    rewrite -> (plus_1_S n').
+    rewrite -> (H_f_ic 1 n').
+    rewrite -> (H_g_ic 1 n').
+    rewrite -> IH_n'.
+    rewrite -> (H_f_bc2).
+    rewrite -> (H_g_bc2).
+    rewrite -> IH_Sn'.
+    rewrite -> (H_f_bc1).
+    rewrite -> (H_g_bc1).
+    reflexivity.
 Qed.
 
 
@@ -872,14 +874,6 @@ Lemma unfold_fib_ds_induction_case :
 Proof.
   unfold_tactic fib_ds.
 Qed.
-
-Theorem and_a_not_so_fun_mystery_function_9 :
-  specification_of_the_mystery_function_9 (fun x => x).
-Proof.
-  unfold specification_of_the_mystery_function_9.
-  split.
-    reflexivity.
-    split.
 
 Theorem and_the_mystery_function_9_is_fib :
   specification_of_the_mystery_function_9 (fib_ds).

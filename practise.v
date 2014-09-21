@@ -78,45 +78,21 @@ Qed.
 
 
 
-Proposition reverse_v1_fits_the_specification_of_reverse :
-  forall T : Type,
-    specification_of_reverse T (reverse_v1 T).
-Proof.
-  intro T.
-  unfold specification_of_reverse.
-  intro append.
-  intro s_append.
-  assert (S_append := s_append).
-  unfold specification_of_append in s_append.
-  split.
+Fixpoint fac (x : nat) :=
+  match x with
+    | 0 => 1
+    | S x' => mult (S x') (fac x')
+  end.
+             
 
-  apply(unfold_reverse_v1_bc T).
+Definition specification_of_the_mystery_function_12 (f : nat -> nat * nat) :=
+  (f 0 = (0, 1))
+  /\
+  (forall n' : nat,
+    f (S n') = let (x, y) := f n'
+               in (S x, y * S x)).
 
-  destruct s_append as [base_a indu_a].
-  intros x.
-  induction xs' as [ | xs'' IHxs''].
-    rewrite -> (unfold_reverse_v1_bc T).
-    rewrite -> (base_a (x :: nil)).
-    rewrite -> (unfold_reverse_ds_induction_case T x).
-    rewrite -> (unfold_reverse_ds_base_case T).
-    rewrite -> (nil_is_neutral_for_append_on_the_left T).
-    reflexivity.
+Definition fac_co_help (x : nat) : nat * nat :=
+  (x, fac x).
 
-    unfold specification_of_append.
-    split.
-      apply (unfold_append_v1_base_case T).
-  
-      intros x0 xs' ys.
-      apply (unfold_append_v1_induction_case T x0 xs' ys).
-    
-    unfold reverse_v1.
-    rewrite -> (unfold_reverse_ds_induction_case T x ( xs'' :: IHxs'')).
-    Check there_is_only_one_append.
-    rewrite -> (there_is_only_one_append 
-                  T append (append_v1 T)
-                  S_append
-                  (append_v1_fits_the_specification_of_append T)
-                  (reverse_ds T (xs'' :: IHxs''))
-                  (x :: nil)).                                         
-    reflexivity.
-Qed.
+Compute(fac_co_help 3).

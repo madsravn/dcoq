@@ -417,6 +417,12 @@ Proof.
     rewrite -> (plus_1_S 0).
 Abort.
 
+Lemma mystery_function_4_is_not_unique :
+  forall f g : nat -> nat,
+    specification_of_the_mystery_function_4 f ->
+    specification_of_the_mystery_function_4 g ->
+    exists n : nat,
+      ~(f n = g n).
 
 Theorem possible_mystery_function_4_is_plus_0 : 
   specification_of_the_mystery_function_4 (plus 0).

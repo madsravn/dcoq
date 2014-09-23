@@ -133,6 +133,7 @@ Fixpoint execute_byte_code_instruction (instruction : byte_code_instruction) ( d
 
 Compute(execute_byte_code_instruction (PUSH 4) (1 :: 2 :: nil)).
 Compute(execute_byte_code_instruction (MUL) (nil)).
+Compute(execute_byte_code_instruction (MUL) (3 :: 2 :: nil)).
 
 
 (* ********** *)
@@ -144,10 +145,13 @@ Compute(execute_byte_code_instruction (MUL) (nil)).
    and returns this stack after the program is executed.
 *)
 
-Fixpoint execute_byte_code_program (program : byte_code_program) (dstack : data_stack) -> data_stack :=
+Fixpoint execute_byte_code_program (program : byte_code_program) (dstack : data_stack) : data_stack :=
   match program with
     | nil => dstack
-    | p1 :: byte_codes => 
+    | p1 :: byte_codes => execute_byte_code_program byte_codes (execute_byte_code_instruction p1 dstack)
+  end.
+
+Compute(execute_byte_code_program ((PUSH 4) :: (PUSH 3) :: (MUL) :: nil) (0 :: nil)).
 
 (* ********** *)
 
@@ -160,6 +164,53 @@ Fixpoint execute_byte_code_program (program : byte_code_program) (dstack : data_
 
   DOING INDUCTION ON P1
 *)
+
+Lemma plus_plus : 
+  forall p : byte_code_program,
+    nil ++ p = p.
+Proof.
+  intro p.
+  (* C-c C-a C-n  _ ++ _*)
+  unfold app.
+  reflexivity.
+Qed.
+
+
+Lemma unfold_byte_code_program_bc : 
+  forall s : data_stack,
+    execute_byte_code_program nil s = s.
+Proof.
+  unfold_tactic execute_byte_code_program.
+Qed.
+
+Lemma unfold_byte_code_program_ic :
+  forall (p1 : byte_code_instruction) (program : byte_code_program) (s : data_stack),
+    execute_byte_code_program (p1 :: program) s = 
+    execute_byte_code_program program (execute_byte_code_instruction p1 s).
+Proof.
+  unfold_tactic execute_byte_code_program.
+Qed.
+
+Theorem list_of_programs : 
+  forall ( p1 p2 : byte_code_program) (s : data_stack),
+    execute_byte_code_program p1 (execute_byte_code_program p2 s) =
+    execute_byte_code_program  (p1 ++ p2) s.
+Proof.         
+  intros p1 p2.
+  intro s.
+
+  induction p1 as [ | p1' IHp1' IHsp1'].
+  rewrite -> plus_plus.
+  rewrite -> unfold_byte_code_program_bc.
+  reflexivity.
+
+  rewrite -> unfold_byte_code_program_ic.
+  
+Admitted.
+  
+
+
+
 
 (* ********** *)
 

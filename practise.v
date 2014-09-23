@@ -96,3 +96,17 @@ Definition fac_co_help (x : nat) : nat * nat :=
   (x, fac x).
 
 Compute(fac_co_help 3).
+
+Lemma negb_negb_b_equals_b : 
+  forall b : bool,
+    negb (negb b) = b.
+Proof.
+  intro b.
+  case b.
+  unfold negb.
+  reflexivity.
+  unfold negb.
+  reflexivity.
+Qed.
+
+

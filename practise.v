@@ -1,6 +1,26 @@
 Require Import Arith.
 Require Import "unfold_tactic".
 
+Definition specification_of_foo (foo : nat -> nat) :=
+  forall n : nat,
+    foo (2 * n) = n.
+
+Theorem there_is_only_one_foo :
+  forall f g : nat -> nat,
+    specification_of_foo f ->
+    specification_of_foo g ->
+    forall x : nat,
+      f (x) = g (x).
+Proof.
+  intros f g.
+  unfold specification_of_foo.
+  intros Hf Hg.
+  intro x.
+  rewrite -> Hf.
+  rewrite -> Hg.
+  reflexivity.
+Qed.
+
 Lemma unfold_add_v1_bc :
   forall j : nat,
     plus 0 j = j.

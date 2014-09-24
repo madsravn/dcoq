@@ -116,7 +116,10 @@ Definition data_stack := list nat.
 Compute( 1 :: 2 :: 3 :: nil).
 Compute( head ( 1 :: 2 :: 3 :: nil)).
 
-Fixpoint execute_byte_code_instruction (instruction : byte_code_instruction) ( dstack : data_stack) : data_stack :=
+(*
+  Also, execute_byte_code_instruction is not recursive, so make sure to define it with Definition, not with Fixpoint.
+*)
+Definition execute_byte_code_instruction (instruction : byte_code_instruction) ( dstack : data_stack) : data_stack :=
   match instruction with
     | PUSH n => n :: dstack
     | ADD => match dstack with

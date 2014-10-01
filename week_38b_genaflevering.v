@@ -77,6 +77,7 @@ Proof.
   intros f g.
   unfold specification_of_evenp.
   intros [Hf_0 [Hf_1 Hf_ij]] [Hg_0 [Hg_1 Hg_ij]] n.
+  Check nat_ind2.
   induction n as [ | | n' IH_n' IH_Sn'] using nat_ind2.  
   
   rewrite -> (Hf_0).
@@ -269,11 +270,11 @@ Lemma nat_ind1_v2 :
       P n.
 Proof.
   intros P H_bc H_ic n.
-  induction n as [ |  |  | n'' IH_n'' IH_Sn''] using nat_ind3.
+  induction n as [ |  |  | n'' IH_n'' IH_Sn'' IH_SSn''] using nat_ind3.
   exact H_bc.
   exact (H_ic 0 H_bc).
   exact (H_ic 1 (H_ic 0 H_bc)).
-  exact (H_ic (S (S n'')) IHn).
+  exact (H_ic (S (S n'')) IH_SSn'').
 Qed.
 
 

@@ -37,6 +37,10 @@ Inductive binary_tree_nat : Type :=
   | Leaf : nat -> binary_tree_nat
   | Node : binary_tree_nat -> binary_tree_nat -> binary_tree_nat.
 
+Check(binary_tree_nat_ind).
+Check nat_ind.
+
+
 (* There is one base case: leaves.
    There is one induction case, with two subtrees.
 *)
@@ -109,6 +113,7 @@ Fixpoint flatten_ds (t : binary_tree_nat) : list nat :=
     | Leaf n => n :: nil
     | Node t1 t2 => (flatten_ds t1) ++ (flatten_ds t2)
   end.
+
 
 Definition flatten_v0 (t : binary_tree_nat) : list nat :=
   flatten_ds t.

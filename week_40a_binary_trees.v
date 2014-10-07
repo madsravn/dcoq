@@ -1001,6 +1001,23 @@ Fixpoint product_of_leaves_good  (t : binary_tree_nat) : nat :=
       end
   end.
 
+Fixpoint product_of_leaves_cps (ans : Type) (t : binary_tree_nat) (k : nat -> ans) : ans :=
+  match t with
+    | Leaf n =>
+      k n
+    | Node t1 t2 =>
+      product_of_leaves_cps
+        ans
+        t1
+        (fun n1 => product_of_leaves_cps
+                     ans
+                     t2
+                     (fun n2 => k (n1 * n2)))
+  end.
+
+Compute bt_1.
+Compute product_of_leaves_cps nat bt_1 (fun n => n).
+
 Lemma unfold_product_of_leaves_good_bc :
   forall n : nat,
     product_of_leaves_good (Leaf n) = n.
@@ -1026,8 +1043,6 @@ Compute unit_test_for_product_of_leaves product_of_leaves_v1.
   = true
   : bool
 *)
-
-
 Lemma product_of_leaves_v1_fits_the_specification_of_product_of_leaves :
   specification_of_product_of_leaves product_of_leaves_v1.
   unfold specification_of_product_of_leaves.

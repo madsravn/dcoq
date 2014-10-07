@@ -4,30 +4,7 @@
 
 (* ********** *)
 
-Require Import Arith Bool unfold_tactic List.
-
-Fixpoint beq_list (T : Type) (beq : T -> T -> bool) (xs ys : list T) : bool :=
-  match xs with
-    | nil =>
-      match ys with
-        | nil => true
-        | y :: ys' => false
-      end
-    | x :: xs' =>
-      match ys with
-        | nil => false
-        | y :: ys' => (beq x y) && (beq_list T beq xs' ys')
-      end
-  end.
-
-Definition beq_list_nat (xs ys : list nat) : bool :=
-  beq_list nat beq_nat xs ys.
-
-Definition beq_list_bool (xs ys : list bool) : bool :=
-  beq_list bool eqb xs ys.
-
-Notation "A =n= B" := (beq_nat A B) (at level 70, right associativity).
-Notation "A =l= B" := (beq_list_nat A B) (at level 70, right associativity).
+Require Import Arith Bool unfold_tactic.
 
 (* ********** *)
 
@@ -36,10 +13,6 @@ Notation "A =l= B" := (beq_list_nat A B) (at level 70, right associativity).
 Inductive binary_tree_nat : Type :=
   | Leaf : nat -> binary_tree_nat
   | Node : binary_tree_nat -> binary_tree_nat -> binary_tree_nat.
-
-Check(binary_tree_nat_ind).
-Check nat_ind.
-
 
 (* There is one base case: leaves.
    There is one induction case, with two subtrees.
@@ -62,16 +35,17 @@ Definition bt_2 :=
        (Leaf 30).
 
 (* ********** *)
-
-Definition unit_test_for_flatten (candidate : binary_tree_nat -> list nat) :=
-  (candidate bt_0 =l= 42 :: nil)
+(*
+Definition unit_test_for_flatten (candidate : binary_tree_nat -> nat) :=
+  (candidate bt_0 =n= 1)
   &&
-  (candidate bt_1 =l= 10 :: 20 :: nil)
+  (candidate bt_1 =n= 2)
   &&
-  (candidate bt_2 =l= 10 :: 20 :: 30 :: nil)
+  (candidate bt_2 =n= 3)
   &&
-  (candidate (Node bt_1 bt_2) =l= 10 :: 20 :: 10 :: 20 :: 30 :: nil)
+  (candidate (Node bt_1 bt_2) =n= 5)
   .
+*)
 (* ********** *)
 
 Definition specification_of_flatten (flatten : binary_tree_nat -> list nat) :=
@@ -114,36 +88,8 @@ Fixpoint flatten_ds (t : binary_tree_nat) : list nat :=
     | Node t1 t2 => (flatten_ds t1) ++ (flatten_ds t2)
   end.
 
-
 Definition flatten_v0 (t : binary_tree_nat) : list nat :=
   flatten_ds t.
-
-Compute unit_test_for_flatten flatten_v0.
-
-Lemma unfold_flatten_ds_bc :
-  forall n : nat,
-    flatten_ds( Leaf n) = n :: nil.
-Proof.    
-  unfold_tactic flatten_ds.
-Qed.
-
-Lemma unfold_flatten_ds_ic :
-  forall t1 t2 : binary_tree_nat,
-    flatten_ds (Node t1 t2) = (flatten_ds t1) ++ (flatten_ds t2).
-Proof.
-  unfold_tactic flatten_ds.
-Qed.
-
-
-Lemma flatten_v0_fits_the_specification_of_flatten :
-    specification_of_flatten flatten_v0.
-Proof.
-  unfold specification_of_flatten.
-  unfold flatten_v0.
-  split.
-    apply unfold_flatten_ds_bc.
-    apply unfold_flatten_ds_ic.
-Qed.
 
 (* ********** *)
 
@@ -158,74 +104,11 @@ Fixpoint flatten_acc (t : binary_tree_nat) (a : list nat) : list nat :=
 Definition flatten_v1 (t : binary_tree_nat) : list nat :=
   flatten_acc t nil.
 
-Compute unit_test_for_flatten flatten_v1.
-
-Lemma unfold_flatten_acc_bc :
-  forall (n : nat) (a : list nat),
-    flatten_acc (Leaf n) a = n :: a.
-Proof.
-  unfold_tactic flatten_acc.
-Qed.
-
-Lemma unfold_flatten_acc_ic :
-  forall (t1 t2 : binary_tree_nat) (a : list nat),
-    flatten_acc (Node t1 t2) a = flatten_acc t1 (flatten_acc t2 a).
-Proof.
-  unfold_tactic flatten_acc.
-Qed.
-
-Lemma help_me_with_list :
-  forall (n : nat) (a : list nat),
-  n :: a = (n :: nil) ++ a.
-Proof.
-  intro n.
-  intro a.
-  unfold app.
-  reflexivity.
-Qed.
-
-Lemma eureka_on_flatten_acc :
-  forall (t1 t2 : binary_tree_nat) (a : list nat),
-    flatten_acc (Node t1 t2) a = flatten_acc t1 nil ++ flatten_acc t2 a.
-Proof.
-  intros t1.
-  induction t1 as [ n | ].
-  intro t2.
-  intro a.
-  rewrite -> unfold_flatten_acc_bc.
-  rewrite -> unfold_flatten_acc_ic.
-  rewrite -> unfold_flatten_acc_bc.
-  rewrite help_me_with_list.
-  reflexivity.
-
-  intro a.
-  intro a0.
-  rewrite -> unfold_flatten_acc_ic.
-  rewrite -> unfold_flatten_acc_ic.
-  rewrite -> (IHt1_1).
-  rewrite <- (app_assoc).
-  rewrite <- (IHt1_2).
-  rewrite <- (IHt1_1).
-  
-  
-
-Lemma flatten_v1_fits_the_specification_of_flatten :
-  specification_of_flatten flatten_v1.
-Proof.
-  unfold specification_of_flatten.
-  unfold flatten_v1.
-  split.
-  intro n.
-  apply unfold_flatten_acc_bc.
-  intros t1 t2.
-
-  Abort.
-
 (* ********** *)
 
 Fixpoint swap_ds (t : binary_tree_nat) : binary_tree_nat :=
   match t with
-    | Leaf n => Leaf n
+    | Leaf n => Leaf in
     | Node t1 t2 => Node (swap_ds t2) (swap_ds t1)
   end.
 

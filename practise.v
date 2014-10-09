@@ -1,6 +1,19 @@
 Require Import Arith.
 Require Import "unfold_tactic".
 
+
+Fixpoint trav (P : nat -> Prop) 
+         (b : P 0) 
+         (f : forall k, P k -> P (S k)) 
+         (n : nat) :=
+  match n return P n with
+    | 0 => b
+    | S n' => f n' (trav P b f n')
+  end.
+Check trav.
+
+Check Prop.
+
 Definition specification_of_foo (foo : nat -> nat) :=
   forall n : nat,
     foo (2 * n) = n.

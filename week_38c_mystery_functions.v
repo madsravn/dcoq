@@ -14,7 +14,7 @@
 *)
 
 (* ********** *)
-Require Import Arith.
+Require Import Arith List.
 Require Import unfold_tactic.
 
 (* Helper stuff *)
@@ -1192,6 +1192,20 @@ Fixpoint fac_co_acc (n : nat) : nat * nat :=
     | S n' => let (x,y) := fac_co_acc n'
               in (S x, y * S x)
 end.
+
+Compute fac_co_acc 3.
+
+ Fixpoint split (A : Type) (ls : list A) : list A * list A :=
+    match ls with
+      | nil => (nil, nil)
+      | h :: nil => (h :: nil, nil)
+      | h1 :: h2 :: ls' =>
+        let (ls1, ls2) := split A ls' in
+          (h1 :: ls1, h2 :: ls2)
+    end.
+
+Check split.
+Compute split nat (1 :: 2 :: 3 :: 4 :: nil).
 
 Fixpoint fac (x : nat) :=
   match x with

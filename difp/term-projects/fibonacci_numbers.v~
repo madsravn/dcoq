@@ -1,0 +1,169 @@
+(* fibonacci_numbers.v *)
+(* dIFP 2014-2015, Q1 *)
+(* Teacher: Olivier Danvy <danvy@cs.au.dk> *)
+
+(* Student name: ... *)
+(* Student number: ... *)
+
+(* ********** *)
+
+(* The goal of this project is to study
+   the Fibonacci function and
+   properties of Fibonacci numbers. *)
+
+(* ********** *)
+
+Require Import Arith.
+
+Definition square (x : nat) : nat :=
+  x * x.
+
+(* ********** *)
+
+(* You are given the two following specifications
+   of the Fibonacci function:
+*)
+
+Definition specification_of_fibonacci (fib : nat -> nat) :=
+  fib 0 = 0
+  /\
+  fib 1 = 1
+  /\
+  forall n'' : nat,
+    fib (S (S n'')) = fib (S n'') + fib n''.
+
+Definition specification_of_fibonacci_alt (fib : nat -> nat) :=
+  fib 0 = 0
+  /\
+  fib 1 = 1
+  /\
+  fib 2 = 1
+  /\
+  forall p q : nat,
+    fib (S (p + q)) =
+    fib (S p) * fib (S q) + fib p * fib q.
+
+(* Prove that each of these specifications
+   specifies a unique function.   
+*)
+
+(* If we removed the clause "fib 2 = 1" in
+   specification_of_fibonacci_alt,
+   would the specification still specify a unique function?
+*)
+
+(*
+   Show that these specifications are equivalent,
+   i.e., prove the following proposition:
+*)
+
+Proposition equivalence_of_the_specifications_of_fibonacci:
+  forall fib: nat -> nat,
+    specification_of_fibonacci fib
+    <->
+    specification_of_fibonacci_alt fib.
+
+(* Suppose that you have only proved
+   that one of the two specifications is unique.
+   Deduce that the other specification is also unique (i.e.,
+   do not prove it from scratch: prove that it is a consequence
+   of the uniqueness of the first specification).
+*)
+
+(* ********** *)
+
+(* Given either of the specifications
+   of the Fibonacci function above,
+   prove the following propositions:
+*)
+
+Proposition about_fibonacci_numbers_whose_index_is_even :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      fib (2 * (S n)) + square (fib n) =
+      square (fib (S (S n))).
+Proof.
+Abort.
+
+Proposition d_Occagne_s_identity :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      fib (2 * (S n)) = fib (S n) * (fib (S (S n)) + fib n).
+Proof.
+Abort.
+
+Proposition Cassini_s_identity_for_even_numbers :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      square (fib (S (2 * n))) =
+      S ((fib (2 * (S n))) * (fib (2 * n))).
+Proof.
+Abort.
+
+Proposition Cassini_s_identity_for_odd_numbers :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      S (square (fib (2 * (S n)))) =
+      (fib (S (2 * (S n)))) * (fib (S (2 * n))).
+Proof.
+Abort.
+
+(* ********** *)
+
+(* Here is the sum function from Week 37: *)
+
+Fixpoint sum_ds (f : nat -> nat) (n : nat) : nat :=
+  match n with
+  | 0 => f 0
+  | S n' => sum_ds f n' + f n
+  end.
+
+Definition sum  (f : nat -> nat) (n : nat) : nat :=
+  sum_ds f n.
+
+(* ********** *)
+
+(* Given either of the specifications
+   of the Fibonacci function above,
+   prove the following propositions:
+*)
+
+Proposition sum_of_the_first_fibonacci_numbers :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      S (sum fib n) = fib (S (S n)).
+Proof.
+Abort.
+
+Proposition sum_of_the_first_fibonacci_numbers_whose_index_is_even :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      S (sum (fun i => fib (2 * i)) n) = fib (S (2 * n)).
+Proof.
+Abort.
+
+Proposition sum_of_the_first_fibonacci_numbers_whose_index_is_odd :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      sum (fun i => fib (S (2 * i))) n = fib (2 * (S n)).
+Proof.
+Abort.
+
+Proposition sum_of_the_squares_of_the_first_fibonacci_numbers :
+  forall fib : nat -> nat,
+    specification_of_fibonacci fib ->
+    forall n : nat,
+      sum (fun i => square (fib i)) n = fib n * fib (S n).
+Proof.
+Abort.
+
+(* ********** *)
+
+(* end of fibonacci_numbers.v *)
